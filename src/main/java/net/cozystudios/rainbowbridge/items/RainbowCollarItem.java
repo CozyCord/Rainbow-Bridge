@@ -1,5 +1,7 @@
 package net.cozystudios.rainbowbridge.items;
 
+import java.util.UUID;
+
 import net.cozystudios.rainbowbridge.petdatabase.petData;
 import net.cozystudios.rainbowbridge.petdatabase.petTracker;
 import net.minecraft.entity.passive.TameableEntity;
@@ -7,11 +9,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.Text;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
-
-import java.util.UUID;
 
 public class RainbowCollarItem extends Item {
     private static final String UUIDtag = "animalUUID";
@@ -21,41 +22,60 @@ public class RainbowCollarItem extends Item {
     }
 
     public ActionResult applyCollar(ItemStack item, PlayerEntity user, TameableEntity tame) {
-            //maybe a config setting here or something
-            tame.setInvulnerable(true);
+        // maybe a config setting here or something
+        tame.setInvulnerable(true);
 
-            //tell server to track the pet
-            petTracker.get(user.getServer()).addPet(tame, user, item);
+        // tell server to track the pet
+        petTracker.get(user.getServer()).addPet(tame, user, item);
 
-            item.decrement(1);
+        item.decrement(1);
 
-            //for debugging, maybe a
-            user.sendMessage(Text.literal(tame.getOwnerUuid().toString()));
+        user.getWorld().playSound(
+                null, // null = broadcast to nearby players
+                tame.getBlockPos(), // sound position
+                SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, // pick any sound here
+                SoundCategory.PLAYERS,
+                1.0F, 1.0F);
 
-            return ActionResult.SUCCESS;
+        // for debugging, maybe a
+        // user.sendMessage(Text.literal(tame.getOwnerUuid().toString()));
+
+        return ActionResult.SUCCESS;
     }
 
-    public static ItemStack getCollar(TameableEntity tame){
+    public static ItemStack getCollar(PlayerEntity user, TameableEntity tame) {
         MinecraftServer server = tame.getWorld().getServer();
-        if (server == null) return null;
+        if (server == null)
+            return null;
         petData data = petTracker.get(server).get(tame.getUuid());
-        if (data == null) return null;
+        if (data == null)
+            return null;
+
+        user.getWorld().playSound(
+                null, // null = broadcast to nearby players
+                tame.getBlockPos(), // sound position
+                SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, // pick any sound here
+                SoundCategory.PLAYERS,
+                1.0F, 1.0F);
         return ItemStack.fromNbt(data.collar);
     }
 
-    public static void removePet(TameableEntity tame){
+    public static void removePet(TameableEntity tame) {
         MinecraftServer server = tame.getWorld().getServer();
-        if (server == null) return;
+        if (server == null)
+            return;
         petTracker.get(server).removePet(tame.getUuid());
         tame.setInvulnerable(false);
     }
 
-    public petData getBoundPetData(World world, ItemStack item){
-        if (!item.hasNbt() || !item.getNbt().containsUuid(UUIDtag)) return null;
+    public petData getBoundPetData(World world, ItemStack item) {
+        if (!item.hasNbt() || !item.getNbt().containsUuid(UUIDtag))
+            return null;
         UUID uuid = item.getNbt().getUuid(UUIDtag);
 
         MinecraftServer server = world.getServer();
-        if (server == null) return null;
+        if (server == null)
+            return null;
         return petTracker.get(server).get(uuid);
     }
 
