@@ -1,12 +1,17 @@
 package net.cozystudios.rainbowbridge.petdatabase;
 
+import java.util.UUID;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-
-import java.util.UUID;
+import net.minecraft.world.World;
 
 public class petData {
     public final UUID uuid;
@@ -16,7 +21,7 @@ public class petData {
     public final UUID ownerUUID;
     public final String ownerName;
 
-    public petData(TameableEntity tame, Entity player, NbtCompound collarItem){
+    public petData(TameableEntity tame, Entity player, NbtCompound collarItem) {
         this.uuid = tame.getUuid();
         this.dim = tame.getWorld().getRegistryKey().getValue();
         this.position = tame.getBlockPos();
@@ -57,6 +62,27 @@ public class petData {
         String ownerName = tag.getString("ownerName");
         NbtCompound collarItem = tag.getCompound("collarItem");
         return new petData(uuid, dim, pos, ownerUUID, ownerName, collarItem);
+    }
+
+    public TameableEntity getEntity(MinecraftServer server) {
+        if (server == null)
+            return null;
+
+        // Convert stored Identifier to a RegistryKey<World>
+        RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, this.dim);
+
+        // Get the ServerWorld
+        ServerWorld world = server.getWorld(worldKey);
+        if (world == null)
+            return null;
+
+        // Look up the entity by UUID
+        Entity entity = world.getEntity(this.uuid);
+        if (entity instanceof TameableEntity tame) {
+            return tame;
+        }
+
+        return null;
     }
 
 }
