@@ -37,6 +37,6 @@ public class TheRainbowBridgeItems {
 
     public static void registerItems(){
         //replace this with a real item group
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(TheRainbowBridgeItems::addItemsToTab);
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(TheRainbowBridgeItems::addItemsToTab);
     }
 }
