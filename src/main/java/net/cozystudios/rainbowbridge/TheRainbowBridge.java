@@ -3,6 +3,8 @@ package net.cozystudios.rainbowbridge;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,11 +87,19 @@ public class TheRainbowBridge implements ModInitializer {
                         for (PetData pet : pets) {
                             var entity = pet.getEntity(server);
                             if (entity != null) {
+                                //entity type
+                                out.writeString(Registries.ENTITY_TYPE.getId(entity.getType()).toString());
+                                //entity data
+                                NbtCompound entityNbt = new NbtCompound();
+                                entity.saveNbt(entityNbt);
+                                out.writeNbt(entityNbt);
                                 // get custom name or default name if there is none
                                 String name = entity.hasCustomName() ? entity.getCustomName().getString()
                                         : "Unnamed " + entity.getType().getName().getString();
                                 out.writeString(name);
                             } else {
+                                out.writeString("minecraft:bat");
+                                out.writeNbt(new NbtCompound());
                                 out.writeString("Could not locate pet!");
                             }
                             out.writeString(pet.position.toShortString());

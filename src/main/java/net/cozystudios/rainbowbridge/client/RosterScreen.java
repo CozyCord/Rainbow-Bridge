@@ -8,7 +8,9 @@ import net.cozystudios.rainbowbridge.RainbowBridgePackets;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -18,10 +20,10 @@ public class RosterScreen extends Screen {
     private static final int TEXTURE_WIDTH = 296;
     private static final int TEXTURE_HEIGHT = 180;
 
-    private PetListWidget petList;
+    public PetListWidget petList;
 
     private List<ClientPetData> pets = null;
-    private List<Text[]> renderedPages = new ArrayList<>(); // precomputed pages
+    private final List<Text[]> renderedPages = new ArrayList<>(); // precomputed pages
     private int currentPage = 0;
 
     private ButtonWidget prevButton;
@@ -56,7 +58,18 @@ public class RosterScreen extends Screen {
 
         updateButtons();
 
-        petList = new PetListWidget(this, client, width, height, 40, height - 40, 14);
+        int listLeft = x + TEXTURE_WIDTH / 2 + 20;
+        int listWidth = TEXTURE_WIDTH / 2 - 30;
+        int listTop = y + 24;
+        int listBottom = y + TEXTURE_HEIGHT - 40;
+        int entryHeight = 14;
+
+        petList = new PetListWidget(this, client, listWidth, this.height, listTop, listBottom, entryHeight);
+
+        petList.setLeftPos(listLeft);
+
+
+        this.addSelectableChild(petList);
 
         // Request pets from server
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
@@ -64,6 +77,7 @@ public class RosterScreen extends Screen {
     }
 
     private void updateButtons() {
+        if (petList != null) petList.setSelectedIndex(currentPage);
         prevButton.active = currentPage > 0;
         nextButton.active = renderedPages.size() > 1 && currentPage < renderedPages.size() - 1;
     }
@@ -74,6 +88,22 @@ public class RosterScreen extends Screen {
         int y = (height - TEXTURE_HEIGHT) / 2;
 
         context.drawTexture(BOOK_TEXTURE, x, y, 0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
+
+        if (pets != null && currentPage < pets.size()) {
+            ClientPetData currentPet = pets.get(currentPage);
+            if (currentPet.entity != null) {
+                InventoryScreen.drawEntity(
+                        context,
+                        x + 80,
+                        y + 130,
+                        40,
+                        x - mouseX,
+                        y - mouseY,
+                        (LivingEntity) currentPet.entity
+                );
+            }
+        }
+
 
         if (pets == null) {
             context.drawText(textRenderer, "Loading pets...", x + 40, y + 80, 0x888888, false);
@@ -144,10 +174,6 @@ public class RosterScreen extends Screen {
         return false;
     }
 
-    @Override
-    public void close() {
-        client.setScreen(null);
-    }
 
     public void setCurrentPage(int i) {
         if (i < 0 || i >= renderedPages.size())

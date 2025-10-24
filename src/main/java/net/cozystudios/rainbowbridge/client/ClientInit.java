@@ -2,8 +2,8 @@ package net.cozystudios.rainbowbridge.client;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
+import net.minecraft.nbt.NbtCompound;
 import org.lwjgl.glfw.GLFW;
 
 import net.cozystudios.rainbowbridge.RainbowBridgePackets;
@@ -40,9 +40,12 @@ public class ClientInit implements ClientModInitializer {
                     int size = buf.readInt();
                     List<ClientPetData> pets = new ArrayList<>();
                     for (int i = 0; i < size; i++) {
+                        String entityTypeId = buf.readString(32767);
+                        NbtCompound nbt = buf.readNbt();
                         String name = buf.readString(32767);
                         String position = buf.readString(32767);
-                        pets.add(new ClientPetData(name, position));
+
+                        pets.add(new ClientPetData(entityTypeId, nbt, name, position));
                     }
 
                     // update GUI on the main thread

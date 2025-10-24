@@ -19,6 +19,7 @@ public class PetListWidget extends ElementListWidget<PetListWidget.PetEntry> {
     private final RosterScreen parent;
     private Object hoveredEntry;
     private boolean renderHorizontalShadows;
+    private int selectedIndex = -1;
 
     public PetListWidget(RosterScreen parent, MinecraftClient client, int width, int height, int top, int bottom,
             int itemHeight) {
@@ -33,6 +34,21 @@ public class PetListWidget extends ElementListWidget<PetListWidget.PetEntry> {
         }
     }
 
+    public void setSelectedIndex(int index){
+        this.selectedIndex = index;
+    }
+
+    public int getSelectedIndex(){
+        return selectedIndex;
+    }
+
+
+    @Override
+    protected int getScrollbarPositionX() {
+        int ogScroll = this.width / 2 + 124;
+        return this.left + this.width - 6;
+    }
+
     /**
      * I ripped this method from ElementListWidget because I needed to stop the background from rendering
      * while still rendering the list entries and scrollbar.
@@ -40,10 +56,11 @@ public class PetListWidget extends ElementListWidget<PetListWidget.PetEntry> {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context);
+        //horrid hack
         int i = this.getScrollbarPositionX();
         int j = i + 6;
-        hoveredEntry = this.isMouseOver((double) mouseX, (double) mouseY)
-                ? this.getEntryAtPosition((double) mouseX, (double) mouseY)
+        hoveredEntry = this.isMouseOver(mouseX, mouseY)
+                ? this.getEntryAtPosition(mouseX, mouseY)
                 : null;
 
         int k = this.getRowLeft();
@@ -104,19 +121,25 @@ public class PetListWidget extends ElementListWidget<PetListWidget.PetEntry> {
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight,
                 int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            // Background highlight
-            int backgroundColor = hovered ? 0x553366FF : 0x33000000;
-            context.fill(x, y, x + entryWidth, y + entryHeight, backgroundColor);
 
-            // Text
+            boolean selected = parent.petList.getSelectedIndex() == this.index;
+            // Background highlight
+            int padding = 1;
+            int backgroundColor = hovered ? 0x553366FF : 0x22000000;
+            backgroundColor = selected ? 0xAA3366FF : backgroundColor;
+            context.fill(x - padding, y - padding, x + entryWidth + padding, y + entryHeight + padding, backgroundColor);
+
             Text name = Text.literal(pet.name).styled(s -> s.withColor(0xFFFFFF));
-            context.drawText(MinecraftClient.getInstance().textRenderer, name, x + 4, y + 2, 0xFFFFFF, false);
+            int textY = y + (entryHeight - MinecraftClient.getInstance().textRenderer.fontHeight) / 2;
+            context.drawText(MinecraftClient.getInstance().textRenderer, name, x + 6, textY, 0xFFFFFF, false);
+
         }
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             if (button == 0 && isMouseOver(mouseX, mouseY)) {
                 parent.setCurrentPage(index + 1);
+                parent.petList.setSelectedIndex(index);
                 return true;
             }
             return false;

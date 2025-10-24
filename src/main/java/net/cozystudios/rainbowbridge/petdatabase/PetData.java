@@ -2,6 +2,8 @@ package net.cozystudios.rainbowbridge.petdatabase;
 
 import java.util.UUID;
 
+import net.minecraft.entity.EntityType;
+import net.minecraft.registry.Registries;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.Entity;
@@ -22,6 +24,7 @@ public class PetData {
     public NbtCompound collar;
     public final UUID ownerUUID;
     public final String ownerName;
+    private final NbtCompound entityData;
 
     public PetData(TameableEntity tame, Entity player, NbtCompound collarItem) {
         this.uuid = tame.getUuid();
@@ -30,17 +33,20 @@ public class PetData {
         this.ownerName = player.getEntityName();
         this.ownerUUID = player.getUuid();
         this.collar = collarItem;
+        this.entityData = new NbtCompound();
+        tame.saveSelfNbt(this.entityData);
+        this.entityData.putString("EntityType", tame.getType().toString());
     }
 
     public PetData(UUID uuid, Identifier dim, BlockPos pos, UUID ownerUUID, String ownerName, NbtCompound collarItem,
-            @Nullable String name) {
-
+                   String name, NbtCompound entityData) {
         this.uuid = uuid;
         this.dim = dim;
         this.position = pos;
         this.ownerName = ownerName;
         this.ownerUUID = ownerUUID;
         this.collar = collarItem;
+        this.entityData = entityData;
     }
 
     public NbtCompound toNbt() {
@@ -55,6 +61,8 @@ public class PetData {
         tag.putInt("x", position.getX());
         tag.putInt("y", position.getY());
         tag.putInt("z", position.getZ());
+
+        tag.put("EntityData", entityData);
         return tag;
     }
 
@@ -66,7 +74,8 @@ public class PetData {
         String ownerName = tag.getString("ownerName");
         NbtCompound collarItem = tag.getCompound("collarItem");
         String name = tag.getString("name");
-        return new PetData(uuid, dim, pos, ownerUUID, ownerName, collarItem, name);
+        NbtCompound entityData = tag.contains("EntityData") ? tag.getCompound("EntityData") : null;
+        return new PetData(uuid, dim, pos, ownerUUID, ownerName, collarItem, name, entityData);
     }
 
     public TameableEntity getEntity(MinecraftServer server) {
@@ -88,6 +97,22 @@ public class PetData {
         }
 
         return null;
+    }
+
+    @Nullable
+    public TameableEntity recreateEntity(MinecraftServer server) {
+        if (server == null || entityData == null) return null;
+
+
+        String typeId = entityData.getString("EntityType");
+        EntityType<?> type = Registries.ENTITY_TYPE.get(new Identifier(typeId));
+
+        RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, this.dim);
+        Entity entity = type.create(server.getWorld(worldKey));
+        if (!(entity instanceof TameableEntity tame)) return null;
+
+        tame.readNbt(entityData); // load all saved NBT
+        return tame;
     }
 
 }
