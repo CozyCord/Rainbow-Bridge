@@ -2,8 +2,8 @@ package net.cozystudios.rainbowbridge.items;
 
 import java.util.UUID;
 
-import net.cozystudios.rainbowbridge.petdatabase.petData;
-import net.cozystudios.rainbowbridge.petdatabase.petTracker;
+import net.cozystudios.rainbowbridge.petdatabase.PetData;
+import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -26,7 +26,7 @@ public class RainbowCollarItem extends Item {
         tame.setInvulnerable(true);
 
         // tell server to track the pet
-        petTracker.get(user.getServer()).addPet(tame, user, item);
+        PetTracker.get(user.getServer()).addPet(tame, user, item);
 
         item.decrement(1);
 
@@ -47,7 +47,7 @@ public class RainbowCollarItem extends Item {
         MinecraftServer server = tame.getWorld().getServer();
         if (server == null)
             return null;
-        petData data = petTracker.get(server).get(tame.getUuid());
+        PetData data = PetTracker.get(server).get(tame.getUuid());
         if (data == null)
             return null;
 
@@ -64,11 +64,11 @@ public class RainbowCollarItem extends Item {
         MinecraftServer server = tame.getWorld().getServer();
         if (server == null)
             return;
-        petTracker.get(server).removePet(tame.getUuid());
+        PetTracker.get(server).removePet(tame.getUuid());
         tame.setInvulnerable(false);
     }
 
-    public petData getBoundPetData(World world, ItemStack item) {
+    public PetData getBoundPetData(World world, ItemStack item) {
         if (!item.hasNbt() || !item.getNbt().containsUuid(UUIDtag))
             return null;
         UUID uuid = item.getNbt().getUuid(UUIDtag);
@@ -76,7 +76,7 @@ public class RainbowCollarItem extends Item {
         MinecraftServer server = world.getServer();
         if (server == null)
             return null;
-        return petTracker.get(server).get(uuid);
+        return PetTracker.get(server).get(uuid);
     }
 
 }

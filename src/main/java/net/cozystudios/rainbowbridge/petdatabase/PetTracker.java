@@ -15,37 +15,37 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class petTracker extends PersistentState {
-    private final Map<UUID, petData> tracked = new HashMap<>();
+public class PetTracker extends PersistentState {
+    private final Map<UUID, PetData> tracked = new HashMap<>();
 
     public void addPet(TameableEntity tame, PlayerEntity user, ItemStack item) {
         TheRainbowBridge.LOGGER.info("adding new entity to be tracked: " + tame.getName());
         NbtCompound collar = new NbtCompound();
         item.writeNbt(collar);
-        tracked.put(tame.getUuid(), new petData(tame, user, collar));
+        tracked.put(tame.getUuid(), new PetData(tame, user, collar));
     }
 
     public void removePet(UUID uuid){
         tracked.remove(uuid);
     }
 
-    public Map<UUID, petData> getTrackedMap(){
+    public Map<UUID, PetData> getTrackedMap(){
         return tracked;
     }
 
-    public static petTracker get(MinecraftServer server) {
+    public static PetTracker get(MinecraftServer server) {
         PersistentStateManager manager = server.getOverworld().getPersistentStateManager();
-        return manager.getOrCreate(petTracker::fromNBT, petTracker::new, "rainbow_bridge_tracked_pets");
+        return manager.getOrCreate(PetTracker::fromNBT, PetTracker::new, "rainbow_bridge_tracked_pets");
     }
 
-    public petData get(UUID uuid){
+    public PetData get(UUID uuid){
         return tracked.get(uuid);
     }
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
         NbtList list = new NbtList();
-        for (petData data : tracked.values()){
+        for (PetData data : tracked.values()){
             list.add(data.toNbt());
         }
 
@@ -54,12 +54,12 @@ public class petTracker extends PersistentState {
     }
 
 
-    public static petTracker fromNBT(NbtCompound nbt){
-        petTracker tracker = new petTracker();
+    public static PetTracker fromNBT(NbtCompound nbt){
+        PetTracker tracker = new PetTracker();
         NbtList list = nbt.getList("pets", NbtElement.COMPOUND_TYPE);
 
         list.forEach(nbtElement -> {
-            petData data = petData.fromNbt((NbtCompound) nbtElement);
+            PetData data = PetData.fromNbt((NbtCompound) nbtElement);
             tracker.tracked.put(data.uuid, data);
         });
 

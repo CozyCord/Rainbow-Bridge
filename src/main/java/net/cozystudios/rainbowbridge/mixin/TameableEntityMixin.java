@@ -1,7 +1,7 @@
 package net.cozystudios.rainbowbridge.mixin;
 
-import net.cozystudios.rainbowbridge.petdatabase.petData;
-import net.cozystudios.rainbowbridge.petdatabase.petTracker;
+import net.cozystudios.rainbowbridge.petdatabase.PetData;
+import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.server.MinecraftServer;
@@ -25,7 +25,7 @@ public abstract class TameableEntityMixin {
     private void rainbowbridge$disableCanBeAttackedIfPet(LivingEntity target, CallbackInfoReturnable<Boolean> cir){
         MinecraftServer server = target.getWorld().getServer();
         if (server == null) return;
-        petData trackedPetData = petTracker.get(server).get(((TameableEntity)(Object)this).getUuid());
+        PetData trackedPetData = PetTracker.get(server).get(((TameableEntity)(Object)this).getUuid());
         if (trackedPetData != null) {
             cir.setReturnValue(true);
         }

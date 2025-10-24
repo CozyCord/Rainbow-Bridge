@@ -11,21 +11,21 @@ import net.minecraft.world.World;
 import java.util.Map;
 import java.util.UUID;
 
-public class petWatcher {
+public class PetWatcher {
     private static int tickCounter = 0;
 
     public static void register(){
-        ServerTickEvents.END_SERVER_TICK.register(petWatcher::onServerTick);
+        ServerTickEvents.END_SERVER_TICK.register(PetWatcher::onServerTick);
     }
 
     private static void onServerTick(MinecraftServer minecraftServer) {
         //this should prolly be a config
         if (++tickCounter % 100 != 0) return;
 
-        petTracker tracker = petTracker.get(minecraftServer);
+        PetTracker tracker = PetTracker.get(minecraftServer);
 
-        for (Map.Entry<UUID, petData> pet : tracker.getTrackedMap().entrySet()) {
-            petData petdata = pet.getValue();
+        for (Map.Entry<UUID, PetData> pet : tracker.getTrackedMap().entrySet()) {
+            PetData petdata = pet.getValue();
 
             RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, petdata.dim);
             ServerWorld world = minecraftServer.getWorld(worldKey);

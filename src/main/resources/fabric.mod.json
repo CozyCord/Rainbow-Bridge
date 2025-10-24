@@ -5,7 +5,8 @@
 	"name": "The Rainbow Bridge",
 	"description": "This is an example description! Tell everyone what your mod is about!",
 	"authors": [
-		"Me!"
+		"jjorge",
+		"conbo"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -19,7 +20,7 @@
 			"net.cozystudios.rainbowbridge.TheRainbowBridge"
 		],
         "client": [
-          "net.cozystudios.rainbowbridge.TheRainbowBridgeClient"
+          "net.cozystudios.rainbowbridge.client.ClientInit"
         ],
 		"fabric-datagen": [
 			"net.cozystudios.rainbowbridge.TheRainbowBridgeDataGenerator"

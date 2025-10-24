@@ -5,8 +5,8 @@ import java.util.List;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import net.cozystudios.rainbowbridge.petdatabase.petData;
-import net.cozystudios.rainbowbridge.petdatabase.petTracker;
+import net.cozystudios.rainbowbridge.petdatabase.PetData;
+import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.MinecraftServer;
@@ -48,12 +48,12 @@ public class TheRainbowBridgeCommands {
             return 0;
 
         StringBuilder pets = new StringBuilder();
-        List<petData> petsList = petTracker.get(server).getTrackedMap().values().stream()
+        List<PetData> petsList = PetTracker.get(server).getTrackedMap().values().stream()
                 .filter(p -> p.ownerUUID.equals(player.getUuid()))
                 .toList();
 
         for (int i = 0; i < petsList.size(); i++) {
-            petData pet = petsList.get(i);
+            PetData pet = petsList.get(i);
             var tame = pet.getEntity(server);
             if (tame != null) {
                 // get custom name or default name if there is none

@@ -2,6 +2,8 @@ package net.cozystudios.rainbowbridge.petdatabase;
 
 import java.util.UUID;
 
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -13,7 +15,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class petData {
+public class PetData {
     public final UUID uuid;
     public final Identifier dim;
     public BlockPos position;
@@ -21,7 +23,7 @@ public class petData {
     public final UUID ownerUUID;
     public final String ownerName;
 
-    public petData(TameableEntity tame, Entity player, NbtCompound collarItem) {
+    public PetData(TameableEntity tame, Entity player, NbtCompound collarItem) {
         this.uuid = tame.getUuid();
         this.dim = tame.getWorld().getRegistryKey().getValue();
         this.position = tame.getBlockPos();
@@ -30,7 +32,9 @@ public class petData {
         this.collar = collarItem;
     }
 
-    public petData(UUID uuid, Identifier dim, BlockPos pos, UUID ownerUUID, String ownerName, NbtCompound collarItem) {
+    public PetData(UUID uuid, Identifier dim, BlockPos pos, UUID ownerUUID, String ownerName, NbtCompound collarItem,
+            @Nullable String name) {
+
         this.uuid = uuid;
         this.dim = dim;
         this.position = pos;
@@ -54,14 +58,15 @@ public class petData {
         return tag;
     }
 
-    public static petData fromNbt(NbtCompound tag) {
+    public static PetData fromNbt(NbtCompound tag) {
         UUID uuid = tag.getUuid("UUID");
         Identifier dim = new Identifier(tag.getString("Dimension"));
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
         UUID ownerUUID = tag.getUuid("ownerUUID");
         String ownerName = tag.getString("ownerName");
         NbtCompound collarItem = tag.getCompound("collarItem");
-        return new petData(uuid, dim, pos, ownerUUID, ownerName, collarItem);
+        String name = tag.getString("name");
+        return new PetData(uuid, dim, pos, ownerUUID, ownerName, collarItem, name);
     }
 
     public TameableEntity getEntity(MinecraftServer server) {

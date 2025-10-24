@@ -1,8 +1,8 @@
 package net.cozystudios.rainbowbridge.mixin;
 
 import net.cozystudios.rainbowbridge.TheRainbowBridge;
-import net.cozystudios.rainbowbridge.petdatabase.petData;
-import net.cozystudios.rainbowbridge.petdatabase.petTracker;
+import net.cozystudios.rainbowbridge.petdatabase.PetData;
+import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -23,7 +23,7 @@ public abstract class MobEntityMixin {
         MinecraftServer server = ((MobEntity)(Object)this).getWorld().getServer();
         if (server == null) return;
 
-        petData trackedPetData = petTracker.get(server).get(((MobEntity)(Object)this).getUuid());
+        PetData trackedPetData = PetTracker.get(server).get(((MobEntity)(Object)this).getUuid());
         if (trackedPetData != null) {
             cir.setReturnValue(false);
         }
