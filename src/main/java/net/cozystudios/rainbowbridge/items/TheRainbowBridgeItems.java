@@ -17,7 +17,7 @@ import net.minecraft.util.Identifier;
 public class TheRainbowBridgeItems {
 
     public static final Item COLLAR = registerItem("collar",
-            new RainbowCollarItem(new FabricItemSettings().maxCount(64)));
+            new RainbowCollarItem(new FabricItemSettings().maxCount(1)));
     public static final Item ROSTER = registerItem("pet_roster",
             new RainbowRosterItem(new FabricItemSettings().maxCount(1)));
 

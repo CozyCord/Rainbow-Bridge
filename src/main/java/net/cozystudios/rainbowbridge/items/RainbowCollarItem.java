@@ -27,8 +27,8 @@ public class RainbowCollarItem extends Item {
 
         // tell server to track the pet
         PetTracker.get(user.getServer()).addPet(tame, user, item);
+        if (!user.isCreative())item.decrement(1);
 
-        item.decrement(1);
 
         user.getWorld().playSound(
                 null, // null = broadcast to nearby players
