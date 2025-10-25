@@ -138,7 +138,7 @@ public class PetListWidget extends ElementListWidget<PetListWidget.PetEntry> {
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             if (button == 0 && isMouseOver(mouseX, mouseY)) {
-                parent.setCurrentPage(index + 1);
+                parent.setCurrentPage(index);
                 parent.petList.setSelectedIndex(index);
                 return true;
             }
