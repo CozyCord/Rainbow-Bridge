@@ -1,4 +1,6 @@
 {
   "item.rainbowbridge.collar" : "Collar",
-  "item.rainbowbridge.pet_roster" : "Pet Roster"
+  "item.rainbowbridge.pet_roster" : "Pet Roster",
+  "category.rainbowbridge.keys": "Rainbow Bridge",
+  "key.rainbowbridge.open_book": "Open Pet Roster"
 }
