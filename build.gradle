@@ -35,6 +35,15 @@ dependencies {
 	
 }
 
+loom {
+    runs {
+        client {
+            client()
+            programArgs '--username', 'TestPlayer'
+        }
+    }
+}
+
 processResources {
 	inputs.property "version", project.version
 

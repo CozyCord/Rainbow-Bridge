@@ -88,8 +88,8 @@ public class RosterScreen extends Screen {
 
         updateButtons();
 
-        int listLeft = x + 10;
-        int listTop = y + MARGIN_Y + 20;
+        int listLeft = x + 20;
+        int listTop = y + MARGIN_Y + 25;
         int listBottom = y + TEXTURE_HEIGHT - 40;
         int entryHeight = 12;
 

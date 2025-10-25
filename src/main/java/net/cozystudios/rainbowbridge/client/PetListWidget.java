@@ -146,7 +146,7 @@ public class PetListWidget extends ElementListWidget<PetListWidget.PetEntry> {
             Text name = Text.literal(trimmedName).styled(s -> s.withColor(0xFFFFFF));
 
             int textY = y + (entryHeight - tr.fontHeight) / 2;
-            context.drawText(tr, name, x + leftPadding, textY, 0xFFFFFF, false);
+            context.drawText(tr, name,  x, textY, 0xFFFFFF, false);
         }
 
         @Override
