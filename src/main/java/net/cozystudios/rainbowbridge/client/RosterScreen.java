@@ -6,6 +6,7 @@ import java.util.List;
 import io.netty.buffer.Unpooled;
 import net.cozystudios.rainbowbridge.RainbowBridgePackets;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
@@ -17,8 +18,23 @@ import net.minecraft.util.Identifier;
 
 public class RosterScreen extends Screen {
     private static final Identifier BOOK_TEXTURE = new Identifier("rainbowbridge", "textures/gui/book_spread.png");
-    private static final int TEXTURE_WIDTH = 296;
+
+    /** The width of the book GUI */
+    private static final int TEXTURE_WIDTH = 292;
+    /** The height of the book GUI */
     private static final int TEXTURE_HEIGHT = 180;
+
+    private static final int MARGIN_X = 10;
+    private static final int PAGE_GAP_X = 10;
+    private static final int PAGE_WIDTH = (TEXTURE_WIDTH / 2) - (MARGIN_X * 2) - PAGE_GAP_X;
+
+    private static final int MARGIN_Y = MARGIN_X;
+    private static final int PAGE_HEIGHT = TEXTURE_HEIGHT - (MARGIN_Y * 2);
+
+    /** @return The x position of the right page including page margin */
+    private int getRightPageX(int width) {
+        return ((width - TEXTURE_WIDTH) / 2) + (MARGIN_X) + PAGE_WIDTH + PAGE_GAP_X;
+    }
 
     public PetListWidget petList;
 
@@ -36,38 +52,50 @@ public class RosterScreen extends Screen {
 
     @Override
     protected void init() {
+        // The left edge of the GUI
         int x = (width - TEXTURE_WIDTH) / 2;
+        // The top edge of the GUI
         int y = (height - TEXTURE_HEIGHT) / 2;
 
+        int navButtonWidth = 30;
+        int navButtonHeight = 20;
+        // The distance between the two buttons
+        int navButtonGap = 70;
         prevButton = addDrawableChild(ButtonWidget.builder(Text.of("<"), button -> {
             if (currentPage > 0) {
                 currentPage--;
                 updateButtons();
             }
-        }).dimensions(x + 20, y + TEXTURE_HEIGHT - 28, 50, 20).build());
+        }).dimensions(getRightPageX(width), y + TEXTURE_HEIGHT - MARGIN_Y - navButtonHeight, navButtonWidth,
+                navButtonHeight).build());
 
         nextButton = addDrawableChild(ButtonWidget.builder(Text.of(">"), button -> {
             if (currentPage < renderedPages.size() - 1) {
                 currentPage++;
                 updateButtons();
             }
-        }).dimensions(x + TEXTURE_WIDTH - 70, y + TEXTURE_HEIGHT - 28, 50, 20).build());
+        }).dimensions(getRightPageX(width) + navButtonGap, y + TEXTURE_HEIGHT - MARGIN_Y - navButtonHeight,
+                navButtonWidth,
+                navButtonHeight).build());
 
+        int buttonWidth = 12;
+        int buttonHeight = 12;
+        // Set the close button in the top right corner partway in the margin
         closeButton = addDrawableChild(ButtonWidget.builder(Text.of("X"), button -> close())
-                .dimensions(x + TEXTURE_WIDTH - 18, y + 6, 12, 12).build());
+                .dimensions(x + TEXTURE_WIDTH - (MARGIN_X / 4) - buttonWidth, y + (MARGIN_Y / 4), buttonWidth,
+                        buttonHeight)
+                .build());
 
         updateButtons();
 
-        int listLeft = x + TEXTURE_WIDTH / 2 + 20;
-        int listWidth = TEXTURE_WIDTH / 2 - 30;
-        int listTop = y + 24;
+        int listLeft = x + 10;
+        int listTop = y + MARGIN_Y + 20;
         int listBottom = y + TEXTURE_HEIGHT - 40;
-        int entryHeight = 14;
+        int entryHeight = 12;
 
-        petList = new PetListWidget(this, client, listWidth, this.height, listTop, listBottom, entryHeight);
+        petList = new PetListWidget(this, client, PAGE_WIDTH, PAGE_HEIGHT, listTop, listBottom, entryHeight);
 
         petList.setLeftPos(listLeft);
-
 
         this.addSelectableChild(petList);
 
@@ -77,7 +105,8 @@ public class RosterScreen extends Screen {
     }
 
     private void updateButtons() {
-        if (petList != null) petList.setSelectedIndex(currentPage);
+        if (petList != null)
+            petList.setSelectedIndex(currentPage);
         prevButton.active = currentPage > 0;
         nextButton.active = renderedPages.size() > 1 && currentPage < renderedPages.size() - 1;
     }
@@ -87,45 +116,92 @@ public class RosterScreen extends Screen {
         int x = (width - TEXTURE_WIDTH) / 2;
         int y = (height - TEXTURE_HEIGHT) / 2;
 
-        context.drawTexture(BOOK_TEXTURE, x, y, 0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
-
-        if (pets != null && currentPage < pets.size()) {
-            ClientPetData currentPet = pets.get(currentPage);
-            if (currentPet.entity != null) {
-                InventoryScreen.drawEntity(
-                        context,
-                        x + 80,
-                        y + 130,
-                        40,
-                        x - mouseX,
-                        y - mouseY,
-                        (LivingEntity) currentPet.entity
-                );
-            }
-        }
-
+        context.drawTexture(BOOK_TEXTURE, x, y, 0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
         if (pets == null) {
             context.drawText(textRenderer, "Loading pets...", x + 40, y + 80, 0x888888, false);
             return;
         }
 
+        /** ==================== */
+        /** Left Page */
+
+        // Draw the title
+        context.drawText(textRenderer, "Pets", x + MARGIN_X, y + MARGIN_Y, 0x888888, false);
+
         // Draw the list
         if (this.petList != null) {
             this.petList.render(context, mouseX, mouseY, delta);
         }
 
-        // Draw current page’s text lines
+        /** End Left Page */
+        /** ==================== */
+
+        /** ==================== */
+        /** Right Page */
+
+        // Draw current pet’s entity model
+        int petModelWidth = 80;
+        if (pets != null && currentPage < pets.size()) {
+            ClientPetData currentPet = pets.get(currentPage);
+            int entityX = getRightPageX(width);
+            int entityY = y + MARGIN_Y + 12;
+            int size = petModelWidth / 2; // Render size of the entity
+
+            // Compute relative mouse offset
+            float relMouseX = entityX + (size / 2) - mouseX;
+            float relMouseY = entityY - mouseY;
+
+            if (currentPet.entity != null) {
+                InventoryScreen.drawEntity(
+                        context,
+                        entityX + (size / 2), // x for entity is at left of box
+                        entityY + (size / 2), // y for entity is at bottom of box
+                        size,
+                        relMouseX,
+                        relMouseY,
+                        (LivingEntity) currentPet.entity);
+            }
+        }
+
+        // Draw current pet's text lines
         if (currentPage >= 0 && currentPage < renderedPages.size()) {
             Text[] lines = renderedPages.get(currentPage);
-            int marginX = 20;
             int lineHeight = 10;
             int textY = y + 20;
 
-            for (int i = 0; i < lines.length; i++) {
-                context.drawText(textRenderer, lines[i], x + marginX, textY + i * lineHeight, 0x303030, false);
+            var tr = MinecraftClient.getInstance().textRenderer;
+
+            // First line (title)
+            String trimmedName = tr.trimToWidth(lines[1], PAGE_WIDTH - tr.getWidth("…")).getString();
+            if (!trimmedName.equals(lines[0].getString())) {
+                trimmedName += "…";
+            }
+            Text lineText = Text.literal(trimmedName).styled(s -> s.withColor(0xFFFFFF));
+            context.drawText(textRenderer, lineText, getRightPageX(width) + (petModelWidth / 2),
+                    textY + 1 * lineHeight,
+                    0x303030, false);
+
+            // Second line (position)
+            context.getMatrices().push(); // Push the current matrix stack so we don't affect it
+            float scale = 0.8f;
+            context.getMatrices().scale(scale, scale, 1.0f);
+            context.drawText(textRenderer, lineText, getRightPageX(width) + (petModelWidth / 2),
+                    textY + 0 * lineHeight,
+                    0x303030, false);
+            context.getMatrices().pop(); // Restore the previous matrix stack
+
+            // Third, fourth, etc line(s)
+            for (int i = 2; i < lines.length; i++) {
+                String tn = tr.trimToWidth(lines[i], PAGE_WIDTH - tr.getWidth("…")).getString();
+                if (!tn.equals(lines[i].getString())) {
+                    tn += "…";
+                }
+                Text lt = Text.literal(tn).styled(s -> s.withColor(0xFFFFFF));
             }
         }
+        /** End Right Page */
+        /** ==================== */
 
         // Draw buttons and other elements
         for (var child : children()) {
@@ -142,19 +218,9 @@ public class RosterScreen extends Screen {
         if (pets.isEmpty()) {
             renderedPages.add(new Text[] {
                     Text.literal("You have no pets tracked."),
-                    Text.literal("Equip a collar to register one!")
+                    Text.literal("Equip a collar on a tamed pet to register it!")
             });
         } else {
-            // Page 0: list
-            // List<Text> listPage = new ArrayList<>();
-            // listPage.add(Text.literal("Your Pets:"));
-            // for (ClientPetData pet : pets) {
-            // listPage.add(Text.literal(" - " + pet.name)
-            // .styled(s -> s.withColor(0x3366ff).withUnderline(true)));
-            // }
-            // renderedPages.add(listPage.toArray(Text[]::new));
-
-            // Additional pages for each pet
             for (ClientPetData pet : pets) {
                 renderedPages.add(new Text[] {
                         Text.literal(pet.name).styled(s -> s.withBold(true)),
@@ -173,7 +239,6 @@ public class RosterScreen extends Screen {
     public boolean shouldPause() {
         return false;
     }
-
 
     public void setCurrentPage(int i) {
         if (i < 0 || i >= renderedPages.size())

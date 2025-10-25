@@ -6,6 +6,7 @@ import java.util.List;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
@@ -34,14 +35,13 @@ public class PetListWidget extends ElementListWidget<PetListWidget.PetEntry> {
         }
     }
 
-    public void setSelectedIndex(int index){
+    public void setSelectedIndex(int index) {
         this.selectedIndex = index;
     }
 
-    public int getSelectedIndex(){
+    public int getSelectedIndex() {
         return selectedIndex;
     }
-
 
     @Override
     protected int getScrollbarPositionX() {
@@ -50,13 +50,14 @@ public class PetListWidget extends ElementListWidget<PetListWidget.PetEntry> {
     }
 
     /**
-     * I ripped this method from ElementListWidget because I needed to stop the background from rendering
+     * I ripped this method from ElementListWidget because I needed to stop the
+     * background from rendering
      * while still rendering the list entries and scrollbar.
      */
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context);
-        //horrid hack
+        // horrid hack
         int i = this.getScrollbarPositionX();
         int j = i + 6;
         hoveredEntry = this.isMouseOver(mouseX, mouseY)
@@ -123,16 +124,29 @@ public class PetListWidget extends ElementListWidget<PetListWidget.PetEntry> {
                 int mouseX, int mouseY, boolean hovered, float tickDelta) {
 
             boolean selected = parent.petList.getSelectedIndex() == this.index;
+
             // Background highlight
             int padding = 1;
             int backgroundColor = hovered ? 0x553366FF : 0x22000000;
             backgroundColor = selected ? 0xAA3366FF : backgroundColor;
-            context.fill(x - padding, y - padding, x + entryWidth + padding, y + entryHeight + padding, backgroundColor);
+            context.fill(x - padding, y - padding, x + entryWidth + padding, y + entryHeight + padding,
+                    backgroundColor);
 
-            Text name = Text.literal(pet.name).styled(s -> s.withColor(0xFFFFFF));
-            int textY = y + (entryHeight - MinecraftClient.getInstance().textRenderer.fontHeight) / 2;
-            context.drawText(MinecraftClient.getInstance().textRenderer, name, x + 6, textY, 0xFFFFFF, false);
+            TextRenderer tr = MinecraftClient.getInstance().textRenderer;
+            int leftPadding = 6;
+            int rightPadding = 6;
 
+            // Compute actual drawable width in GUI pixels
+            int availableWidth = entryWidth - leftPadding - rightPadding;
+
+            // Trim pet name to fit the width
+            String trimmedName = tr.trimToWidth(pet.name, availableWidth - tr.getWidth("…"));
+            if (!trimmedName.equals(pet.name))
+                trimmedName += "…";
+            Text name = Text.literal(trimmedName).styled(s -> s.withColor(0xFFFFFF));
+
+            int textY = y + (entryHeight - tr.fontHeight) / 2;
+            context.drawText(tr, name, x + leftPadding, textY, 0xFFFFFF, false);
         }
 
         @Override
