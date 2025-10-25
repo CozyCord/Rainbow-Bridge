@@ -82,3 +82,12 @@ publishing {
 		// retrieving dependencies.
 	}
 }
+
+loom {
+    runs {
+        client {
+            client()
+            programArgs '--username', 'TestPlayer'
+        }
+    }
+}
