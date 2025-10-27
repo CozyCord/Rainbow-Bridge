@@ -1,0 +1,288 @@
+<owo-ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/wisp-forest/owo-lib/1.20/owo-ui.xsd">
+    <components>
+        <stack-layout id="roster-screen">
+            <children>
+                <texture texture="rainbowbridge:textures/gui/book_spread.png"
+                    texture-width="292" texture-height="180"
+                    region-width="292" region-height="180">
+                </texture>
+                <flow-layout direction="horizontal">
+                    <children>
+                        <!-- Left Page -->
+                        <flow-layout direction="vertical">
+                            <children>
+                                <scroll direction="vertical">
+                                    <flow-layout id="pet-list" direction="vertical">
+                                        <children>
+                                            <!-- To be populated programmatically -->
+                                        </children>
+
+                                        <sizing>
+                                            <vertical method="content">150</vertical>
+                                            <horizontal method="fill">100</horizontal>
+                                        </sizing>
+                                    </flow-layout>
+
+                                    <scrollbar>
+                                        <flat>#72331f</flat>
+                                    </scrollbar>
+
+                                    <sizing>
+                                        <vertical method="fixed">
+                                            114
+                                        </vertical>
+                                    </sizing>
+                                    <allow-overflow>true</allow-overflow>
+                                </scroll>
+
+                            </children>
+
+                            <sizing>
+                                <horizontal method="fill">50</horizontal>
+                                <!-- <vertical method="fixed">160</vertical> -->
+                            </sizing>
+
+                            <padding>
+                                <all>10</all>
+                                <top>30</top>
+                                <right>18</right>
+                            </padding>
+                        </flow-layout>
+
+                        <!-- Right Page -->
+                        <flow-layout direction="vertical">
+
+                            <children>
+
+                                <!-- Top-right corner button -->
+                                <button id="close-button">
+                                    <text>X</text>
+                                    <renderer>
+                                        <flat
+                                            color="#72331f"
+                                            hovered-color="#602613"
+                                            disabled-color="#3A1C1C"
+                                        />
+                                    </renderer>
+                                    <sizing>
+                                        <horizontal method="fixed">12</horizontal>
+                                        <vertical method="fixed">12</vertical>
+                                    </sizing>
+                                    <positioning type="relative">
+                                        <relative>100,0</relative>
+                                    </positioning>
+                                    <margins>
+                                        <right>0</right>
+                                    </margins>
+
+                                </button>
+
+                                <!-- Name -->
+                                <label id="pet-name-label">
+
+                                    <margins>
+                                        <top>11</top>
+                                        <left>12</left>
+                                    </margins>
+
+                                    <max-width>97</max-width>
+                                </label>
+
+                                <flow-layout direction="horizontal">
+                                    <children>
+                                        <!-- Entity box -->
+                                        <stack-layout id="entity-box-container">
+                                            <children>
+                                                <!-- To be rendered programmatically -->
+                                            </children>
+                                            <sizing>
+                                                <horizontal method="fixed">50</horizontal>
+                                                <vertical method="fixed">50</vertical>
+                                            </sizing>
+                                            <margins>
+                                                <top>1</top>
+                                                <left>4</left>
+                                            </margins>
+                                        </stack-layout>
+
+                                        <flow-layout direction="vertical">
+                                            <children>
+                                                <!-- Summon button -->
+                                                <button id="summon-button">
+                                                    <sizing>
+                                                        <horizontal method="fixed">46</horizontal>
+                                                        <vertical method="fixed">23</vertical>
+                                                    </sizing>
+                                                    <renderer>
+                                                        <texture u="0" v="0"
+                                                            texture="rainbowbridge:textures/gui/test_c.png"
+                                                            texture-width="92" texture-height="46" />
+                                                    </renderer>
+                                                    <margins>
+                                                        <bottom>4</bottom>
+                                                    </margins>
+                                                </button>
+
+                                                <!-- Send home button -->
+                                                <button id="send-button">
+                                                    <sizing>
+                                                        <horizontal method="fixed">46</horizontal>
+                                                        <vertical method="fixed">23</vertical>
+                                                    </sizing>
+                                                    <renderer>
+                                                        <texture u="46" v="0"
+                                                            texture="rainbowbridge:textures/gui/test_c.png"
+                                                            texture-width="92" texture-height="46" />
+                                                    </renderer>
+                                                </button>
+                                            </children>
+
+                                            <margins>
+                                                <top>8</top>
+                                                <left>8</left>
+                                            </margins>
+                                        </flow-layout>
+
+                                    </children>
+                                </flow-layout>
+
+                                <!-- Position -->
+                                <label id="pet-position-label">
+                                    <margins>
+                                        <top>3</top>
+                                        <left>5</left>
+                                    </margins>
+                                </label>
+                                <!-- Test button A -->
+                                <!-- <button id="summon-button">
+                                    <sizing>
+                                        <horizontal method="fixed">46</horizontal>
+                                        <vertical method="fixed">23</vertical>
+                                    </sizing>
+                                    <renderer>
+                                        <texture u="0" v="0"
+                                            texture="rainbowbridge:textures/gui/test_a.png"
+                                            texture-width="92" texture-height="46" />
+                                    </renderer>
+                                    <margins>
+                                        <bottom>1</bottom>
+                                    </margins>
+                                </button> -->
+                                <!-- <button id="summon-button">
+                                    <sizing>
+                                        <horizontal method="fixed">46</horizontal>
+                                        <vertical method="fixed">23</vertical>
+                                    </sizing>
+                                    <renderer>
+                                        <texture u="46" v="0"
+                                            texture="rainbowbridge:textures/gui/test_a.png"
+                                            texture-width="92" texture-height="46" />
+                                    </renderer>
+                                    <margins>
+                                        <bottom>4</bottom>
+                                    </margins>
+                                </button> -->
+
+                                <!-- Test button B -->
+                                <!-- <button id="summon-button">
+                                    <sizing>
+                                        <horizontal method="fixed">46</horizontal>
+                                        <vertical method="fixed">23</vertical>
+                                    </sizing>
+                                    <renderer>
+                                        <texture u="0" v="0"
+                                            texture="rainbowbridge:textures/gui/test_b.png"
+                                            texture-width="92" texture-height="46" />
+                                    </renderer>
+                                    <margins>
+                                        <bottom>1</bottom>
+                                    </margins>
+                                </button>
+                                <button id="summon-button">
+                                    <sizing>
+                                        <horizontal method="fixed">46</horizontal>
+                                        <vertical method="fixed">23</vertical>
+                                    </sizing>
+                                    <renderer>
+                                        <texture u="46" v="0"
+                                            texture="rainbowbridge:textures/gui/test_b.png"
+                                            texture-width="92" texture-height="46" />
+                                    </renderer>
+                                    <margins>
+                                        <bottom>4</bottom>
+                                    </margins>
+                                </button> -->
+
+                                <!-- Test button C -->
+                                <!-- <button id="summon-button">
+                                    <sizing>
+                                        <horizontal method="fixed">46</horizontal>
+                                        <vertical method="fixed">23</vertical>
+                                    </sizing>
+                                    <renderer>
+                                        <texture u="0" v="0"
+                                            texture="rainbowbridge:textures/gui/test_c.png"
+                                            texture-width="92" texture-height="46" />
+                                    </renderer>
+                                    <margins>
+                                        <bottom>1</bottom>
+                                    </margins>
+                                </button>
+                                <button id="summon-button">
+                                    <sizing>
+                                        <horizontal method="fixed">46</horizontal>
+                                        <vertical method="fixed">23</vertical>
+                                    </sizing>
+                                    <renderer>
+                                        <texture u="46" v="0"
+                                            texture="rainbowbridge:textures/gui/test_c.png"
+                                            texture-width="92" texture-height="46" />
+                                    </renderer>
+                                    <margins>
+                                        <bottom>4</bottom>
+                                    </margins>
+                                </button> -->
+
+                            </children>
+                            <sizing>
+                                <horizontal method="fill">50</horizontal>
+                                <vertical method="fixed">180</vertical>
+                            </sizing>
+                            <padding>
+                                <left>10</left>
+                            </padding>
+                            <allow-overflow>false</allow-overflow>
+                        </flow-layout>
+                    </children>
+                    <sizing>
+                        <horizontal method="fixed">292</horizontal>
+                        <vertical method="fixed">180</vertical>
+                    </sizing>
+                    <positioning type="relative">50,50</positioning>
+                    <padding>
+                        <all>16</all>
+                        <top>8</top>
+                    </padding>
+                </flow-layout>
+            </children>
+            <vertical-alignment>center</vertical-alignment>
+            <horizontal-alignment>center</horizontal-alignment>
+        </stack-layout>
+    </components>
+    <templates>
+        <template name="entity-box-template">
+            <entity id="entity-box" type="{{selected_pet_type}}">
+                <look-at-cursor>true</look-at-cursor>
+                <scale-to-fit>true</scale-to-fit>
+                <sizing>
+                    <horizontal method="fixed">24</horizontal>
+                    <vertical method="fixed">24</vertical>
+                </sizing>
+                <margins>
+                    <bottom>8</bottom>
+                </margins>
+            </entity>
+        </template>
+    </templates>
+</owo-ui>
