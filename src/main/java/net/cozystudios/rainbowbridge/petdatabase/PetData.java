@@ -1,20 +1,24 @@
 package net.cozystudios.rainbowbridge.petdatabase;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 public class PetData {
@@ -39,7 +43,7 @@ public class PetData {
     }
 
     public PetData(UUID uuid, Identifier dim, BlockPos pos, UUID ownerUUID, String ownerName, NbtCompound collarItem,
-                   String name, NbtCompound entityData) {
+            String name, NbtCompound entityData) {
         this.uuid = uuid;
         this.dim = dim;
         this.position = pos;
@@ -78,7 +82,7 @@ public class PetData {
         return new PetData(uuid, dim, pos, ownerUUID, ownerName, collarItem, name, entityData);
     }
 
-    public TameableEntity getEntity(MinecraftServer server) {
+    public CompletableFuture<TameableEntity> getEntity(MinecraftServer server) {
         if (server == null)
             return null;
 
@@ -90,10 +94,16 @@ public class PetData {
         if (world == null)
             return null;
 
-        // Look up the entity by UUID
+        // Look up the entity by UUID, load chunks if needed
         Entity entity = world.getEntity(this.uuid);
         if (entity instanceof TameableEntity tame) {
-            return tame;
+            return CompletableFuture.completedFuture(tame);
+        } else {
+            loadChunks(server).join();
+            entity = world.getEntity(this.uuid);
+            if (entity instanceof TameableEntity tame) {
+                return CompletableFuture.completedFuture(tame);
+            }
         }
 
         return null;
@@ -101,18 +111,38 @@ public class PetData {
 
     @Nullable
     public TameableEntity recreateEntity(MinecraftServer server) {
-        if (server == null || entityData == null) return null;
-
+        if (server == null || entityData == null)
+            return null;
 
         String typeId = entityData.getString("EntityType");
         EntityType<?> type = Registries.ENTITY_TYPE.get(new Identifier(typeId));
 
         RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, this.dim);
         Entity entity = type.create(server.getWorld(worldKey));
-        if (!(entity instanceof TameableEntity tame)) return null;
+        if (!(entity instanceof TameableEntity tame))
+            return null;
 
         tame.readNbt(entityData); // load all saved NBT
         return tame;
+    }
+
+    /** Load chunk(s) pet entity is in */
+    protected CompletableFuture<Boolean> loadChunks(MinecraftServer server) {
+        RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, this.dim);
+        ServerWorld world = server.getWorld(worldKey);
+        if (world != null) {
+            // Ensure chunk is loaded (force load if needed)
+            world.getChunkManager().addTicket(
+                    ChunkTicketType.START,
+                    new ChunkPos(position),
+                    2,
+                    Unit.INSTANCE);
+            world.getChunk(position);
+            return CompletableFuture
+                    .completedFuture(true);
+        } else {
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
 }

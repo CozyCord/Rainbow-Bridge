@@ -30,11 +30,11 @@ import net.minecraft.util.Identifier;
 public class RosterScreen extends BaseUIModelScreen<StackLayout> {
     private int currentPetIndex;
 
-    private List<ClientPetData> pets = null;
-
     private DynamicEntityComponent entityBox;
 
     private @Nullable StackLayout entityBoxContainer;
+
+    private ClientPetData currentPet;
 
     public RosterScreen() {
         super(StackLayout.class, DataSource.asset(new Identifier("rainbowbridge", "roster")));
@@ -43,7 +43,24 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
     @Override
     protected void build(StackLayout rootComponent) {
         rootComponent.childById(ButtonComponent.class, "summon-button").onPress(button -> {
-            System.out.println("click");
+            assert currentPet != null;
+
+            // Get player position
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc.player == null)
+                return;
+            double x = mc.player.getX();
+            double y = mc.player.getY();
+            double z = mc.player.getZ();
+
+            // Send summon packet
+            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+            buf.writeUuid(currentPet.entity.getUuid());
+            buf.writeDouble(x);
+            buf.writeDouble(y);
+            buf.writeDouble(z);
+
+            ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_SUMMON, buf);
         });
 
         StackLayout container = rootComponent.childById(StackLayout.class, "entity-box-container");
@@ -70,17 +87,25 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TRACKER, buf);
 
-        if (this.uiAdapter == null)
-            return;
-
         this.entityBoxContainer = this.uiAdapter.rootComponent.childById(StackLayout.class,
                 "entity-box-container");
+
+        client.execute(() -> {
+            List<ClientPetData> pets = ClientPetCache.getAllPets();
+            if (pets != null && !pets.isEmpty()) {
+                setPets(pets);
+            }
+        });
     }
 
     // Update the current pet
     protected void updateCurrentPet(ClientPetData newPet) {
 
+        List<ClientPetData> pets = ClientPetCache.getAllPets();
         assert pets != null;
+
+        this.currentPetIndex = pets.indexOf(newPet);
+        this.currentPet = newPet;
 
         // Update entity box
         entityBoxContainer.removeChild(entityBox);
@@ -105,8 +130,6 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
     }
 
     public void setPets(List<ClientPetData> pets) {
-        this.pets = pets;
-        // petList.setPets(pets);
         currentPetIndex = 0;
         updateCurrentPet(pets.get(currentPetIndex));
 
@@ -160,6 +183,11 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
             petListContainer.child(wrapper);
         }
 
+    }
+
+    @Override
+    public boolean shouldPause() {
+        return false;
     }
 
 }

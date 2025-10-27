@@ -3,17 +3,20 @@ package net.cozystudios.rainbowbridge.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.nbt.NbtCompound;
 import org.lwjgl.glfw.GLFW;
 
+import io.netty.buffer.Unpooled;
 import net.cozystudios.rainbowbridge.RainbowBridgePackets;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
 
 public class ClientInit implements ClientModInitializer {
     private static KeyBinding openBookKey;
@@ -50,11 +53,16 @@ public class ClientInit implements ClientModInitializer {
 
                     // update GUI on the main thread
                     client.execute(() -> {
-                        if (client.currentScreen instanceof RosterScreen rosterScreen) {
-                            rosterScreen.setPets(pets);
-                        }
+                        ClientPetCache.setPets(pets);
                     });
                 });
+
+        // Register a listener for when the player joins a world/server
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            // Send a packet to request pet data from the server
+            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+            ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TRACKER, buf);
+        });
     }
 
 }

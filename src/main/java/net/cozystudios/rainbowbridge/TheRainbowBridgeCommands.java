@@ -54,11 +54,11 @@ public class TheRainbowBridgeCommands {
 
         for (int i = 0; i < petsList.size(); i++) {
             PetData pet = petsList.get(i);
-            var tame = pet.getEntity(server);
+            var tame = pet.getEntity(server).join();
             if (tame != null) {
                 // get custom name or default name if there is none
                 String name = tame.hasCustomName() ? tame.getCustomName().getString()
-                        : "Unnamed " + tame.getType().getName().getString();
+                        : tame.getType().getName().getString();
 
                 pets.append(name)
                         .append(": ")

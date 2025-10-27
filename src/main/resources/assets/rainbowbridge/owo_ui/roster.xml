@@ -19,7 +19,6 @@
                                         </children>
 
                                         <sizing>
-                                            <vertical method="content">150</vertical>
                                             <horizontal method="fill">100</horizontal>
                                         </sizing>
                                     </flow-layout>

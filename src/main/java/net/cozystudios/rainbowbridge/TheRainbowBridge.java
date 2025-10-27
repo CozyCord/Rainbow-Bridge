@@ -2,9 +2,8 @@ package net.cozystudios.rainbowbridge;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +18,9 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.ActionResult;
 
 public class TheRainbowBridge implements ModInitializer {
@@ -85,11 +86,11 @@ public class TheRainbowBridge implements ModInitializer {
                         out.writeInt(pets.size());
 
                         for (PetData pet : pets) {
-                            var entity = pet.getEntity(server);
+                            var entity = pet.getEntity(server).join();
                             if (entity != null) {
-                                //entity type
+                                // entity type
                                 out.writeString(Registries.ENTITY_TYPE.getId(entity.getType()).toString());
-                                //entity data
+                                // entity data
                                 NbtCompound entityNbt = new NbtCompound();
                                 entity.saveNbt(entityNbt);
                                 out.writeNbt(entityNbt);
@@ -109,5 +110,42 @@ public class TheRainbowBridge implements ModInitializer {
                         ServerPlayNetworking.send(player, RainbowBridgePackets.RESPONSE_PET_TRACKER, out);
                     });
                 });
+
+        // Register a global receiver to handle pet summon requests from clients
+        ServerPlayNetworking.registerGlobalReceiver(RainbowBridgePackets.REQUEST_PET_SUMMON,
+                (server, player, handler, buf, responseSender) -> {
+                    try {
+                        UUID petUuid = buf.readUuid();
+                        double x = buf.readDouble();
+                        double y = buf.readDouble();
+                        double z = buf.readDouble();
+
+                        server.execute(() -> {
+                            PetTracker tracker = PetTracker.get(server);
+                            PetData petData = tracker.getTrackedMap().get(petUuid);
+                            if (petData != null) {
+                                // Either get the existing entity or recreate it if necessary
+                                var entity = petData.getEntity(server).join();
+                                if (entity == null) {
+                                    entity = petData.recreateEntity(server);
+                                }
+
+                                if (entity != null) {
+                                    entity.teleport(x, y, z);
+                                    entity.setSitting(false);
+                                } else {
+                                    System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
+                                }
+                            } else {
+                                System.err.println("No pet data found for UUID: " + petUuid);
+                            }
+                        });
+                    } catch (Exception e) {
+                        System.err.println("Bad summon packet from " + player.getName().getString() + ": " + e);
+                    } finally {
+                        ServerPlayNetworking.send(player, RainbowBridgePackets.RESPONSE_PET_SUMMON, new PacketByteBuf(Unpooled.buffer()));
+                    }
+                });
+
     }
 }
