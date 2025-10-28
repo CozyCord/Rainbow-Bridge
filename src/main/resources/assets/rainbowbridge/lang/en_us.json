@@ -2,5 +2,6 @@
   "item.rainbowbridge.collar" : "Collar",
   "item.rainbowbridge.pet_roster" : "Pet Roster",
   "category.rainbowbridge.keys": "Rainbow Bridge",
-  "key.rainbowbridge.open_book": "Open Pet Roster"
+  "key.rainbowbridge.open_book": "Open Pet Roster",
+  "message.rainbowbridge.home_set": "Home location set"
 }

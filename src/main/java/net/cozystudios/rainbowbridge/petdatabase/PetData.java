@@ -84,7 +84,7 @@ public class PetData {
 
     public CompletableFuture<TameableEntity> getEntity(MinecraftServer server) {
         if (server == null)
-            return null;
+            return CompletableFuture.completedFuture(null);
 
         // Convert stored Identifier to a RegistryKey<World>
         RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, this.dim);
@@ -92,7 +92,7 @@ public class PetData {
         // Get the ServerWorld
         ServerWorld world = server.getWorld(worldKey);
         if (world == null)
-            return null;
+            return CompletableFuture.completedFuture(null);
 
         // Look up the entity by UUID, load chunks if needed
         Entity entity = world.getEntity(this.uuid);
@@ -106,7 +106,7 @@ public class PetData {
             }
         }
 
-        return null;
+        return CompletableFuture.completedFuture(null);
     }
 
     @Nullable

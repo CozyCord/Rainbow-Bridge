@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.buffer.Unpooled;
+import net.cozystudios.rainbowbridge.homeblock.HomeBlock;
+import net.cozystudios.rainbowbridge.homeblock.HomeRequestPacket;
+import net.cozystudios.rainbowbridge.homeblock.HomeUpdatePacket;
 import net.cozystudios.rainbowbridge.items.RainbowCollarItem;
 import net.cozystudios.rainbowbridge.items.TheRainbowBridgeItems;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
@@ -21,7 +24,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.math.BlockPos;
 
 public class TheRainbowBridge implements ModInitializer {
     public static final String MOD_ID = "rainbowbridge";
@@ -96,7 +102,7 @@ public class TheRainbowBridge implements ModInitializer {
                                 out.writeNbt(entityNbt);
                                 // get custom name or default name if there is none
                                 String name = entity.hasCustomName() ? entity.getCustomName().getString()
-                                        : "Unnamed " + entity.getType().getName().getString();
+                                        : entity.getType().getName().getString();
                                 out.writeString(name);
                             } else {
                                 out.writeString("minecraft:bat");
@@ -112,13 +118,14 @@ public class TheRainbowBridge implements ModInitializer {
                 });
 
         // Register a global receiver to handle pet summon requests from clients
-        ServerPlayNetworking.registerGlobalReceiver(RainbowBridgePackets.REQUEST_PET_SUMMON,
+        ServerPlayNetworking.registerGlobalReceiver(RainbowBridgePackets.REQUEST_PET_TELEPORT,
                 (server, player, handler, buf, responseSender) -> {
                     try {
                         UUID petUuid = buf.readUuid();
                         double x = buf.readDouble();
                         double y = buf.readDouble();
                         double z = buf.readDouble();
+                        Boolean shouldSit = buf.readBoolean();
 
                         server.execute(() -> {
                             PetTracker tracker = PetTracker.get(server);
@@ -132,7 +139,7 @@ public class TheRainbowBridge implements ModInitializer {
 
                                 if (entity != null) {
                                     entity.teleport(x, y, z);
-                                    entity.setSitting(false);
+                                    entity.setSitting(shouldSit);
                                 } else {
                                     System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
                                 }
@@ -143,8 +150,28 @@ public class TheRainbowBridge implements ModInitializer {
                     } catch (Exception e) {
                         System.err.println("Bad summon packet from " + player.getName().getString() + ": " + e);
                     } finally {
-                        ServerPlayNetworking.send(player, RainbowBridgePackets.RESPONSE_PET_SUMMON, new PacketByteBuf(Unpooled.buffer()));
+                        ServerPlayNetworking.send(player, RainbowBridgePackets.RESPONSE_PET_TELEPORT,
+                                new PacketByteBuf(Unpooled.buffer()));
                     }
+                });
+
+        RainbowBridgeNet.CHANNEL.registerServerbound(HomeRequestPacket.class, (packet, handler) -> {
+            ServerPlayerEntity player = handler.player();
+            ServerWorld world = player.getServerWorld();
+
+            // Get the persistent HomeBlock instance for this world
+            HomeBlock homes = HomeBlock.get(world);
+            BlockPos homePos = homes.getHome(player.getUuid());
+
+            // Send it back to the client
+            RainbowBridgeNet.CHANNEL.serverHandle(player).send(
+                    new HomeUpdatePacket(homePos));
+        });
+
+        RainbowBridgeNet.CHANNEL.registerServerbound(HomeUpdatePacket.class,
+                (packet, handler) -> {
+                    BlockPos pos = packet.pos();
+                    HomeBlock.get(handler.player().getServerWorld()).setHome(handler.player(), pos);
                 });
 
     }

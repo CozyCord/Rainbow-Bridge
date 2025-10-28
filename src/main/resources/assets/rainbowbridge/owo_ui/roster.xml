@@ -124,7 +124,7 @@
                                                 </button>
 
                                                 <!-- Send home button -->
-                                                <button id="send-button">
+                                                <button id="home-button">
                                                     <sizing>
                                                         <horizontal method="fixed">46</horizontal>
                                                         <vertical method="fixed">23</vertical>
@@ -146,13 +146,23 @@
                                     </children>
                                 </flow-layout>
 
-                                <!-- Position -->
+                                <!-- Current position -->
                                 <label id="pet-position-label">
                                     <margins>
                                         <top>3</top>
                                         <left>5</left>
                                     </margins>
                                 </label>
+
+                                <!-- Home position -->
+                                <label id="home-position-label">
+                                    <text>hi</text>
+                                    <margins>
+                                        <top>3</top>
+                                        <left>5</left>
+                                    </margins>
+                                </label>
+
                                 <!-- Test button A -->
                                 <!-- <button id="summon-button">
                                     <sizing>

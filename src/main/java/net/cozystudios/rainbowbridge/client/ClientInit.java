@@ -6,7 +6,10 @@ import java.util.List;
 import org.lwjgl.glfw.GLFW;
 
 import io.netty.buffer.Unpooled;
+import net.cozystudios.rainbowbridge.RainbowBridgeNet;
 import net.cozystudios.rainbowbridge.RainbowBridgePackets;
+import net.cozystudios.rainbowbridge.homeblock.HomeBlockUpdateEvents;
+import net.cozystudios.rainbowbridge.homeblock.HomeUpdatePacket;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -53,15 +56,24 @@ public class ClientInit implements ClientModInitializer {
 
                     // update GUI on the main thread
                     client.execute(() -> {
-                        ClientPetCache.setPets(pets);
+                        ClientPetList.setPets(pets);
                     });
                 });
+
+        // Listen to home block update packet
+        RainbowBridgeNet.CHANNEL.registerClientbound(HomeUpdatePacket.class, ((packet, content) -> {
+            MinecraftClient.getInstance().execute(() -> {
+                HomeBlockUpdateEvents.fire(MinecraftClient.getInstance().player.getUuid(), packet.pos());
+            });
+        }));
 
         // Register a listener for when the player joins a world/server
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             // Send a packet to request pet data from the server
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
             ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TRACKER, buf);
+
+            ClientHomeBlock.initialize();
         });
     }
 
