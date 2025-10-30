@@ -86,7 +86,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player != null) {
 
-            var homePos = ClientHomeBlock.get();
+            BlockPos homePos = ClientHomeBlock.get();
             this.homeButton.visible = homePos != null;
             this.homeButton.onPress(button -> {
                 if (homePos == null) {
@@ -151,9 +151,9 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         HomeBlockUpdateEvents.subscribe(homeUpdateListener);
 
         // Get home position
-        BlockPos home = ClientHomeBlock.get();
-        if (home != null) {
-            homeLabel.text(Text.literal(home.toShortString()));
+        BlockPos homePos = ClientHomeBlock.get();
+        if (homePos != null) {
+            homeLabel.text(Text.literal(homePos.toShortString()));
             homeButton.visible = true;
         }
 

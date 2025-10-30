@@ -75,6 +75,11 @@ public class ClientInit implements ClientModInitializer {
 
             ClientHomeBlock.initialize();
         });
+
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            ClientHomeBlock.reset();
+            ClientPetList.reset();
+        });
     }
 
 }

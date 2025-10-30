@@ -29,6 +29,11 @@ public class ClientHomeBlock {
         RainbowBridgeNet.CHANNEL.clientHandle().send(new HomeRequestPacket()); // Request home position from server
     }
 
+    public static void reset() {
+        blockPos = null;
+        listeners.clear();
+    }
+
     public static synchronized void set(BlockPos blockPos) {
         ClientHomeBlock.blockPos = blockPos;
         notifyListeners();

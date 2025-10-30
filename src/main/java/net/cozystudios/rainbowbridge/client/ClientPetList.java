@@ -17,6 +17,11 @@ public class ClientPetList {
         });
     }
 
+    public static void reset() {
+        pets.clear();
+        listeners.clear();
+    }
+
     public static synchronized void setPets(List<ClientPetData> newPets) {
         pets.clear();
         pets.addAll(newPets);
