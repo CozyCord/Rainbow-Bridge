@@ -46,6 +46,7 @@ public class TheRainbowBridge implements ModInitializer {
         TheRainbowBridgeItems.registerItems();
         PetWatcher.register();
         TheRainbowBridgeCommands.register();
+        RainbowBridgeNet.register();
 
         // cause dogs are annoying and return from a interaction early, we have to
         // overwrite nbt methods
@@ -154,25 +155,5 @@ public class TheRainbowBridge implements ModInitializer {
                                 new PacketByteBuf(Unpooled.buffer()));
                     }
                 });
-
-        RainbowBridgeNet.CHANNEL.registerServerbound(HomeRequestPacket.class, (packet, handler) -> {
-            ServerPlayerEntity player = handler.player();
-            ServerWorld world = player.getServerWorld();
-
-            // Get the persistent HomeBlock instance for this world
-            HomeBlock homes = HomeBlock.get(world);
-            BlockPos homePos = homes.getHome(player.getUuid());
-
-            // Send it back to the client
-            RainbowBridgeNet.CHANNEL.serverHandle(player).send(
-                    new HomeUpdatePacket(homePos));
-        });
-
-        RainbowBridgeNet.CHANNEL.registerServerbound(HomeUpdatePacket.class,
-                (packet, handler) -> {
-                    BlockPos pos = packet.pos();
-                    HomeBlock.get(handler.player().getServerWorld()).setHome(handler.player(), pos);
-                });
-
     }
 }
