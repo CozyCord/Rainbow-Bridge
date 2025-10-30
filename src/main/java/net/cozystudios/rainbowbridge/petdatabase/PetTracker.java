@@ -1,5 +1,10 @@
 package net.cozystudios.rainbowbridge.petdatabase;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import net.cozystudios.rainbowbridge.TheRainbowBridge;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,10 +15,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class PetTracker extends PersistentState {
     private final Map<UUID, PetData> tracked = new HashMap<>();
@@ -40,6 +41,12 @@ public class PetTracker extends PersistentState {
 
     public PetData get(UUID uuid){
         return tracked.get(uuid);
+    }
+
+    public static List<PetData> getAllForUser(MinecraftServer server, PlayerEntity user) {
+        return PetTracker.get(server).tracked.values().stream()
+        .filter(pet -> pet.ownerUUID.equals(user.getUuid()))
+        .toList();
     }
 
     @Override

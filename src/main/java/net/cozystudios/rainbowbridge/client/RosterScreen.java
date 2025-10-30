@@ -1,9 +1,6 @@
 package net.cozystudios.rainbowbridge.client;
 
 import java.util.List;
-import java.util.UUID;
-import java.util.function.BiConsumer;
-
 import org.jetbrains.annotations.Nullable;
 
 import io.netty.buffer.Unpooled;
@@ -42,7 +39,9 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
     private @Nullable ButtonComponent homeButton; // Component for the send pet to home button
     private @Nullable LabelComponent homeLabel; // Component for the coordinates
-    private BiConsumer<UUID, BlockPos> homeUpdateListener;
+    private HomeBlockUpdateEvents.IListener homeUpdateListener;
+
+    private @Nullable ButtonComponent summonButton;
 
     public RosterScreen() {
         super(StackLayout.class, DataSource.asset(new Identifier("rainbowbridge", "roster")));
@@ -52,8 +51,13 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
     protected void build(StackLayout rootComponent) {
 
         // Summon button
-        rootComponent.childById(ButtonComponent.class, "summon-button").onPress(button -> {
-            assert currentPet != null;
+        this.summonButton = rootComponent.childById(ButtonComponent.class, "summon-button");
+
+        summonButton.onPress(button -> {
+            if (currentPet == null) {
+                System.err.println("[RainbowBridge] Unable to find current pet.");
+                return;
+            }
 
             // Get player position
             MinecraftClient mc = MinecraftClient.getInstance();
@@ -74,6 +78,8 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
             ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TELEPORT, buf);
         });
+
+        summonButton.visible = currentPet != null;
 
         // Home button
         this.homeButton = this.uiAdapter.rootComponent.childById(ButtonComponent.class, "home-button");
@@ -166,13 +172,21 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
     }
 
     // Update the current pet
+    @Nullable
     protected void updateCurrentPet(ClientPetData newPet) {
+        if (newPet == null) {
+            this.currentPet = null;
+            this.currentPetIndex = -1;
+            this.summonButton.visible = false;
+        }
 
         List<ClientPetData> pets = ClientPetList.getAllPets();
         assert pets != null;
 
         this.currentPetIndex = pets.indexOf(newPet);
         this.currentPet = newPet;
+
+        this.summonButton.visible = true; // Show summon button
 
         // Update entity box
         entityBoxContainer.removeChild(entityBox);
@@ -197,8 +211,17 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
     }
 
     public void setPets(List<ClientPetData> pets) {
-        currentPetIndex = 0;
-        updateCurrentPet(pets.get(currentPetIndex));
+        if (pets.isEmpty()) {
+            updateCurrentPet(null);
+            return;
+        }
+
+        updateCurrentPet(pets.get(0));
+
+        // Hide the empty pet list message
+        LabelComponent noPetsMessage = uiAdapter.rootComponent.childById(LabelComponent.class, "no-pets-message");
+        noPetsMessage.remove();
+
 
         // Find the container
         FlowLayout petListContainer = uiAdapter.rootComponent.childById(FlowLayout.class, "pet-list");
@@ -206,7 +229,6 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         // Clear old buttons if necessary
         petListContainer.clearChildren();
 
-        var i = 0;
         // Generate buttons for all pets
         for (ClientPetData pet : pets) {
 
@@ -226,7 +248,6 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
             label.mouseDown().subscribe((mouseX, mouseY, button) -> {
                 if (button == 0) {
-                    currentPetIndex = i;
                     updateCurrentPet(pet);
                     MinecraftClient.getInstance().getSoundManager().play(
                             PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));

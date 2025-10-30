@@ -1,6 +1,5 @@
 package net.cozystudios.rainbowbridge;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,9 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.buffer.Unpooled;
-import net.cozystudios.rainbowbridge.homeblock.HomeBlock;
-import net.cozystudios.rainbowbridge.homeblock.HomeRequestPacket;
-import net.cozystudios.rainbowbridge.homeblock.HomeUpdatePacket;
 import net.cozystudios.rainbowbridge.items.RainbowCollarItem;
 import net.cozystudios.rainbowbridge.items.TheRainbowBridgeItems;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
@@ -24,10 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
 
 public class TheRainbowBridge implements ModInitializer {
     public static final String MOD_ID = "rainbowbridge";
@@ -83,10 +76,7 @@ public class TheRainbowBridge implements ModInitializer {
                 (server, player, handler, buf, responseSender) -> {
                     server.execute(() -> {
                         // get your PersistentState
-                        PetTracker tracker = PetTracker.get(server);
-
-                        // collect data to send
-                        List<PetData> pets = new ArrayList<>(tracker.getTrackedMap().values());
+                        List<PetData> pets = PetTracker.getAllForUser(server, player);
 
                         // serialize the data into a PacketByteBuf
                         PacketByteBuf out = new PacketByteBuf(Unpooled.buffer());
