@@ -22,12 +22,16 @@ public class RainbowBridgeNet {
             HomeBlock homes = HomeBlock.get(world);
             BlockPos homePos = homes.getHome(player.getUuid());
 
-            // Send it back to the client
-            RainbowBridgeNet.CHANNEL.serverHandle(player).send(
-                    new HomeUpdatePacket(homePos));
+            if (homePos != null) {
+                // Send it back to the client
+                RainbowBridgeNet.CHANNEL.serverHandle(player).send(
+                        new HomeUpdatePacket(homePos));
+            }
         });
 
-        RainbowBridgeNet.CHANNEL.registerServerbound(HomeUpdatePacket.class, (packet, handler) -> {
+        RainbowBridgeNet.CHANNEL.registerServerbound(HomeUpdatePacket.class, (packet, handler) ->
+
+        {
             BlockPos pos = packet.pos();
             HomeBlock.get(handler.player().getServerWorld()).setHome(handler.player(), pos);
         });
