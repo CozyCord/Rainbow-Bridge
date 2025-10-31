@@ -75,36 +75,10 @@ public class TheRainbowBridge implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(RainbowBridgePackets.REQUEST_PET_TRACKER,
                 (server, player, handler, buf, responseSender) -> {
                     server.execute(() -> {
-                        // get your PersistentState
-                        List<PetData> pets = PetTracker.getAllForUser(server, player);
-
-                        // serialize the data into a PacketByteBuf
-                        PacketByteBuf out = new PacketByteBuf(Unpooled.buffer());
-                        out.writeInt(pets.size());
-
-                        for (PetData pet : pets) {
-                            var entity = pet.getEntity(server).join();
-                            if (entity != null) {
-                                // entity type
-                                out.writeString(Registries.ENTITY_TYPE.getId(entity.getType()).toString());
-                                // entity data
-                                NbtCompound entityNbt = new NbtCompound();
-                                entity.saveNbt(entityNbt);
-                                out.writeNbt(entityNbt);
-                                // get custom name or default name if there is none
-                                String name = entity.hasCustomName() ? entity.getCustomName().getString()
-                                        : entity.getType().getName().getString();
-                                out.writeString(name);
-                            } else {
-                                out.writeString("minecraft:bat");
-                                out.writeNbt(new NbtCompound());
-                                out.writeString("Could not locate pet!");
-                            }
-                            out.writeString(pet.position.toShortString());
-                        }
+                        var petList = PetTracker.serializePetList(player);
 
                         // send back to the client
-                        ServerPlayNetworking.send(player, RainbowBridgePackets.RESPONSE_PET_TRACKER, out);
+                        ServerPlayNetworking.send(player, RainbowBridgePackets.RESPONSE_PET_TRACKER, petList);
                     });
                 });
 

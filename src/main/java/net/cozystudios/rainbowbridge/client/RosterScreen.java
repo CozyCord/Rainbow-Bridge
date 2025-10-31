@@ -47,6 +47,49 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         super(StackLayout.class, DataSource.asset(new Identifier("rainbowbridge", "roster")));
     }
 
+    // @Override
+    protected void init() {
+        super.init();
+
+        // Request pets from server
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TRACKER, buf);
+
+        this.homeLabel = this.uiAdapter.rootComponent.childById(LabelComponent.class,
+                "home-position-label");
+
+        this.homeButton = this.uiAdapter.rootComponent.childById(ButtonComponent.class, "home-button");
+
+        homeUpdateListener = (uuid, newHomePos) -> {
+            if (uuid.equals(MinecraftClient.getInstance().player.getUuid())) {
+                homeLabel.text(Text.literal(newHomePos.toShortString()));
+                homeButton.visible = true;
+            }
+        };
+
+        HomeBlockUpdateEvents.subscribe(homeUpdateListener);
+
+        // Get home position
+        BlockPos homePos = ClientHomeBlock.get();
+        if (homePos != null) {
+            homeLabel.text(Text.literal(homePos.toShortString()));
+            homeButton.visible = true;
+        }
+
+        // Subscribe for live updates
+        ClientPetList.addListener(this::refreshPetList);
+
+        this.entityBoxContainer = this.uiAdapter.rootComponent.childById(StackLayout.class,
+                "entity-box-container");
+
+        client.execute(() -> {
+            List<ClientPetData> pets = ClientPetList.getAllPets();
+            if (pets != null && !pets.isEmpty()) {
+                setPets(pets);
+            }
+        });
+    }
+
     @Override
     protected void build(StackLayout rootComponent) {
 
@@ -128,49 +171,6 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
     }
 
-    // @Override
-    protected void init() {
-        super.init();
-
-        // Request pets from server
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TRACKER, buf);
-
-        this.homeLabel = this.uiAdapter.rootComponent.childById(LabelComponent.class,
-                "home-position-label");
-
-        this.homeButton = this.uiAdapter.rootComponent.childById(ButtonComponent.class, "home-button");
-
-        homeUpdateListener = (uuid, newHomePos) -> {
-            if (uuid.equals(MinecraftClient.getInstance().player.getUuid())) {
-                homeLabel.text(Text.literal(newHomePos.toShortString()));
-                homeButton.visible = true;
-            }
-        };
-
-        HomeBlockUpdateEvents.subscribe(homeUpdateListener);
-
-        // Get home position
-        BlockPos homePos = ClientHomeBlock.get();
-        if (homePos != null) {
-            homeLabel.text(Text.literal(homePos.toShortString()));
-            homeButton.visible = true;
-        }
-
-        // Subscribe for live updates
-        ClientPetList.addListener(this::refreshPetList);
-
-        this.entityBoxContainer = this.uiAdapter.rootComponent.childById(StackLayout.class,
-                "entity-box-container");
-
-        client.execute(() -> {
-            List<ClientPetData> pets = ClientPetList.getAllPets();
-            if (pets != null && !pets.isEmpty()) {
-                setPets(pets);
-            }
-        });
-    }
-
     // Update the current pet
     @Nullable
     protected void updateCurrentPet(ClientPetData newPet) {
@@ -220,8 +220,8 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
         // Hide the empty pet list message
         LabelComponent noPetsMessage = uiAdapter.rootComponent.childById(LabelComponent.class, "no-pets-message");
-        noPetsMessage.remove();
-
+        if (noPetsMessage != null)
+            noPetsMessage.remove();
 
         // Find the container
         FlowLayout petListContainer = uiAdapter.rootComponent.childById(FlowLayout.class, "pet-list");

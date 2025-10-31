@@ -37,9 +37,6 @@ public class RainbowCollarItem extends Item {
                 SoundCategory.PLAYERS,
                 1.0F, 1.0F);
 
-        // for debugging, maybe a
-        // user.sendMessage(Text.literal(tame.getOwnerUuid().toString()));
-
         return ActionResult.SUCCESS;
     }
 
@@ -64,7 +61,7 @@ public class RainbowCollarItem extends Item {
         MinecraftServer server = tame.getWorld().getServer();
         if (server == null)
             return;
-        PetTracker.get(server).removePet(tame.getUuid());
+        PetTracker.get(server).removePet(server, tame.getUuid());
         tame.setInvulnerable(false);
     }
 

@@ -22,10 +22,10 @@ public class PetListUpdateEvents {
         listeners.remove(listener);
     }
 
-    /** Notify all listeners that a home position changed */
-    public static void fire(UUID playerUuid, List<ClientPetData> pos) {
+    /** Notify all listeners that the pet lsit changed */
+    public static void fire(UUID playerUuid, List<ClientPetData> petList) {
         for (var listener : listeners) {
-            listener.accept(playerUuid, pos);
+            listener.accept(playerUuid, petList);
         }
     }
 }
