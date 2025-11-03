@@ -43,9 +43,11 @@
 
                             <padding>
                                 <all>10</all>
-                                <top>30</top>
                                 <right>18</right>
                             </padding>
+                            <margins>
+                                <top>24</top>
+                            </margins>
                         </flow-layout>
 
                         <!-- Right Page -->
@@ -53,24 +55,22 @@
 
                             <children>
 
-                                <!-- Top-right corner button -->
+                                <!-- Close Button -->
                                 <button id="close-button">
-                                    <text>X</text>
                                     <renderer>
-                                        <flat
-                                            color="#72331f"
-                                            hovered-color="#602613"
-                                            disabled-color="#3A1C1C"
-                                        />
+                                        <texture u="0" v="0"
+                                            texture="rainbowbridge:textures/gui/close_button.png"
+                                            texture-width="11" texture-height="22" />
                                     </renderer>
                                     <sizing>
-                                        <horizontal method="fixed">12</horizontal>
-                                        <vertical method="fixed">12</vertical>
+                                        <horizontal method="fixed">11</horizontal>
+                                        <vertical method="fixed">11</vertical>
                                     </sizing>
                                     <positioning type="relative">
                                         <relative>100,0</relative>
                                     </positioning>
                                     <margins>
+                                        <bottom>0</bottom>
                                         <right>0</right>
                                     </margins>
 
@@ -80,16 +80,16 @@
                                 <label id="pet-name-label">
 
                                     <margins>
-                                        <top>11</top>
+                                        <top>15</top>
                                         <left>12</left>
                                     </margins>
 
                                     <max-width>97</max-width>
                                 </label>
 
+                                <!-- Entity box / buttons -->
                                 <flow-layout direction="horizontal">
                                     <children>
-                                        <!-- Entity box -->
                                         <stack-layout id="entity-box-container">
                                             <children>
                                                 <!-- To be rendered programmatically -->
@@ -114,7 +114,7 @@
                                                     </sizing>
                                                     <renderer>
                                                         <texture u="0" v="0"
-                                                            texture="rainbowbridge:textures/gui/test_c.png"
+                                                            texture="rainbowbridge:textures/gui/command_buttons.png"
                                                             texture-width="92" texture-height="46" />
                                                     </renderer>
                                                     <margins>
@@ -130,7 +130,7 @@
                                                     </sizing>
                                                     <renderer>
                                                         <texture u="46" v="0"
-                                                            texture="rainbowbridge:textures/gui/test_c.png"
+                                                            texture="rainbowbridge:textures/gui/command_buttons.png"
                                                             texture-width="92" texture-height="46" />
                                                     </renderer>
                                                 </button>
@@ -149,7 +149,7 @@
                                 <!-- Current position -->
                                 <label id="pet-position-label">
                                     <margins>
-                                        <top>3</top>
+                                        <top>5</top>
                                         <left>5</left>
                                     </margins>
                                 </label>
@@ -179,7 +179,7 @@
                     </children>
                     <sizing>
                         <horizontal method="fixed">292</horizontal>
-                        <vertical method="fixed">180</vertical>
+                        <vertical method="fixed">190</vertical>
                     </sizing>
                     <positioning type="relative">50,50</positioning>
                     <padding>

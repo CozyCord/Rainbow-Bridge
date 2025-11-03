@@ -169,6 +169,11 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
             container.child(entityBox);
         }
 
+        // Close button
+        rootComponent.childById(ButtonComponent.class, "close-button").onPress(button -> {
+            close();
+        });
+
     }
 
     // Update the current pet
