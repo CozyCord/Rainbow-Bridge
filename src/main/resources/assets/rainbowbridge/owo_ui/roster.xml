@@ -99,7 +99,7 @@
                                                 <vertical method="fixed">50</vertical>
                                             </sizing>
                                             <margins>
-                                                <top>1</top>
+                                                <top>6</top>
                                                 <left>4</left>
                                             </margins>
                                         </stack-layout>

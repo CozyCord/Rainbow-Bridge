@@ -9,6 +9,7 @@ import io.netty.buffer.Unpooled;
 import net.cozystudios.rainbowbridge.RainbowBridgePackets;
 import net.cozystudios.rainbowbridge.TheRainbowBridge;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -19,6 +20,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 
@@ -69,18 +72,44 @@ public class PetTracker extends PersistentState {
         out.writeInt(pets.size());
 
         for (PetData pet : pets) {
-            var entity = pet.getEntity(player.getServer()).join();
-            if (entity != null) {
-                // entity type
-                out.writeString(Registries.ENTITY_TYPE.getId(entity.getType()).toString());
-                // entity data
-                NbtCompound entityNbt = new NbtCompound();
-                entity.saveNbt(entityNbt);
-                out.writeNbt(entityNbt);
-                // get custom name or default name if there is none
-                String name = entity.hasCustomName() ? entity.getCustomName().getString()
-                        : entity.getType().getName().getString();
-                out.writeString(name);
+            var data = pet.getEntity(player.getServer()).join();
+
+            if (data != null) {
+                if (data.entity() != null) {
+                    var entity = data.entity();
+                    // entity type
+                    out.writeString(Registries.ENTITY_TYPE.getId(entity.getType()).toString());
+                    // entity data
+                    NbtCompound entityNbt = new NbtCompound();
+                    entity.saveNbt(entityNbt);
+                    out.writeNbt(entityNbt);
+                    // get custom name or default name if there is none
+                    String name = entity.hasCustomName() ? entity.getCustomName().getString()
+                            : entity.getType().getName().getString();
+                    out.writeString(name);
+
+                }
+                // Entity is on player's shoulder -- use saved NBT
+                else if (data.shoulderNbt() != null) {
+                    NbtCompound nbt = data.shoulderNbt();
+
+                    // entity type
+                    out.writeString(nbt.getString("id"));
+                    // entity NBT
+                    out.writeNbt(nbt);
+
+                    String name;
+
+                    // name
+                    if (nbt.contains("CustomName")) {
+                        name = Text.Serializer.fromJson(nbt.getString("CustomName")).getString();
+                    } else {
+                        name = Registries.ENTITY_TYPE.get(new Identifier(nbt.getString("id"))).getName().getString();
+                    }
+
+                    out.writeString(name);
+                }
+
             } else {
                 out.writeString("minecraft:bat");
                 out.writeNbt(new NbtCompound());

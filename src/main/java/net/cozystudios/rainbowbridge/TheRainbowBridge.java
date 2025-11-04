@@ -1,6 +1,5 @@
 package net.cozystudios.rainbowbridge;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -17,9 +16,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.ActionResult;
 
 public class TheRainbowBridge implements ModInitializer {
@@ -97,14 +94,16 @@ public class TheRainbowBridge implements ModInitializer {
                             PetData petData = tracker.getTrackedMap().get(petUuid);
                             if (petData != null) {
                                 // Either get the existing entity or recreate it if necessary
-                                var entity = petData.getEntity(server).join();
-                                if (entity == null) {
-                                    entity = petData.recreateEntity(server);
-                                }
-
+                                var pd = petData.getEntity(server).join();
+                                var entity = pd.entity();
                                 if (entity != null) {
                                     entity.teleport(x, y, z);
                                     entity.setSitting(shouldSit);
+                                } else if (pd.shoulderNbt() != null) {
+
+                                    var newEntity = petData.recreateEntity(server);
+                                    newEntity.teleport(x, y, z);
+                                    newEntity.setSitting(shouldSit);
                                 } else {
                                     System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
                                 }

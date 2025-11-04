@@ -3,7 +3,9 @@
 	"package": "net.cozystudios.rainbowbridge.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-        "TameableEntityMixin"
+        "TameableEntityMixin",
+		"MobEntityMixin",
+		"PlayerEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

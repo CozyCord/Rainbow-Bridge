@@ -9,11 +9,13 @@ import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 public class TheRainbowBridgeCommands {
 
@@ -54,15 +56,29 @@ public class TheRainbowBridgeCommands {
 
         for (int i = 0; i < petsList.size(); i++) {
             PetData pet = petsList.get(i);
-            var tame = pet.getEntity(server).join();
-            if (tame != null) {
-                // get custom name or default name if there is none
-                String name = tame.hasCustomName() ? tame.getCustomName().getString()
-                        : tame.getType().getName().getString();
+            var pd = pet.getEntity(server).join();
+            if (pd != null) {
+                var tame = pd.entity();
+                var nbt = pd.shoulderNbt();
+                if (tame != null) {
+                    // get custom name or default name if there is none
+                    String name = tame.hasCustomName() ? tame.getCustomName().getString()
+                            : tame.getType().getName().getString();
 
-                pets.append(name)
-                        .append(": ")
-                        .append(pet.position.toShortString());
+                    pets.append(name)
+                            .append(": ");
+                } else if (nbt != null) {
+
+                    // name
+                    String name = nbt.contains("CustomName")
+                            ? Text.Serializer.fromJson(nbt.getString("CustomName")).getString()
+                            : Registries.ENTITY_TYPE.get(new Identifier(nbt.getString("id"))).getName().getString();
+
+                    pets.append(name)
+                            .append(": ");
+                }
+
+                pets.append(pet.position.toShortString());
 
                 if (i != petsList.size() - 1) {
                     pets.append("\n");

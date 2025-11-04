@@ -1,10 +1,12 @@
 package net.cozystudios.rainbowbridge.petdatabase;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.cozystudios.rainbowbridge.ShoulderAccessor;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.TameableEntity;
@@ -13,8 +15,10 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
@@ -82,7 +86,15 @@ public class PetData {
         return new PetData(uuid, dim, pos, ownerUUID, ownerName, collarItem, name, entityData);
     }
 
-    public CompletableFuture<TameableEntity> getEntity(MinecraftServer server) {
+    public record PetEntityHandle(@Nullable TameableEntity entity, @Nullable NbtCompound shoulderNbt) {
+    }
+
+    /**
+     * 
+     * @param server
+     * @return entity or nbt if entity is on player's shoulder
+     */
+    public CompletableFuture<PetEntityHandle> getEntity(MinecraftServer server) {
         if (server == null)
             return CompletableFuture.completedFuture(null);
 
@@ -94,15 +106,31 @@ public class PetData {
         if (world == null)
             return CompletableFuture.completedFuture(null);
 
+        var player = server.getPlayerManager().getPlayer(ownerUUID);
+        if (player != null) {
+
+            NbtCompound left = player.getShoulderEntityLeft();
+            NbtCompound right = player.getShoulderEntityRight();
+            // First, check if the entity is on a player's shoulder
+            for (NbtCompound nbt : List.of(left, right)) {
+                if (nbt != null && !nbt.isEmpty()) {
+                    if (entityDataMatchesShoulder(nbt, entityData)) {
+                        return CompletableFuture.completedFuture(new PetEntityHandle(null, nbt));
+                    }
+                }
+            }
+
+        }
+
         // Look up the entity by UUID, load chunks if needed
         Entity entity = world.getEntity(this.uuid);
         if (entity instanceof TameableEntity tame) {
-            return CompletableFuture.completedFuture(tame);
+            return CompletableFuture.completedFuture(new PetEntityHandle(tame, null));
         } else {
             loadChunks(server).join();
             entity = world.getEntity(this.uuid);
             if (entity instanceof TameableEntity tame) {
-                return CompletableFuture.completedFuture(tame);
+                return CompletableFuture.completedFuture(new PetEntityHandle(tame, null));
             }
         }
 
@@ -114,7 +142,7 @@ public class PetData {
         if (server == null || entityData == null)
             return null;
 
-        String typeId = entityData.getString("EntityType");
+        String typeId = entityData.getString("id");
         EntityType<?> type = Registries.ENTITY_TYPE.get(new Identifier(typeId));
 
         RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD, this.dim);
@@ -122,7 +150,23 @@ public class PetData {
         if (!(entity instanceof TameableEntity tame))
             return null;
 
+        // Remove from shoulder
+        ServerPlayerEntity player = server.getPlayerManager().getPlayer(ownerUUID);
+        if (player != null) {
+            NbtCompound left = player.getShoulderEntityLeft();
+            NbtCompound right = player.getShoulderEntityRight();
+
+            if (!left.isEmpty() && left.containsUuid("UUID") && left.getUuid("UUID").equals(uuid)) {
+                ((ShoulderAccessor) player).rainbowbridge_clearShoulder(uuid);
+            }
+
+            if (!right.isEmpty() && right.containsUuid("UUID") && right.getUuid("UUID").equals(uuid)) {
+                ((ShoulderAccessor) player).rainbowbridge_clearShoulder(uuid);
+            }
+        }
+
         tame.readNbt(entityData); // load all saved NBT
+        server.getWorld(worldKey).spawnEntity(tame);
         return tame;
     }
 
@@ -143,6 +187,34 @@ public class PetData {
         } else {
             return CompletableFuture.completedFuture(null);
         }
+    }
+
+    private boolean entityDataMatchesShoulder(NbtCompound shoulderNbt, NbtCompound savedEntityData) {
+        // Compare type
+        String shoulderId = shoulderNbt.getString("id");
+        String savedId = savedEntityData.getString("id");
+        if (!shoulderId.equals(savedId))
+            return false;
+
+        // Compare variant (for parrots)
+        if (shoulderId.equals("minecraft:parrot")) {
+            int shoulderVariant = shoulderNbt.getInt("Variant");
+            int savedVariant = savedEntityData.getInt("Variant");
+            if (shoulderVariant != savedVariant)
+                return false;
+        }
+
+        // Compare custom name if present
+        boolean shoulderHasName = shoulderNbt.contains("CustomName");
+        boolean savedHasName = savedEntityData.contains("CustomName");
+
+        if (shoulderHasName && savedHasName) {
+            String shoulderName = Text.Serializer.fromJson(shoulderNbt.getString("CustomName")).getString();
+            String savedName = Text.Serializer.fromJson(savedEntityData.getString("CustomName")).getString();
+            return shoulderName.equals(savedName);
+        }
+
+        return !shoulderHasName && !savedHasName;
     }
 
 }

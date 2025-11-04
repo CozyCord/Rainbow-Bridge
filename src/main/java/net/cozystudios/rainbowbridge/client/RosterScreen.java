@@ -7,6 +7,7 @@ import io.netty.buffer.Unpooled;
 import io.wispforest.owo.ui.base.BaseUIModelScreen;
 import io.wispforest.owo.ui.component.ButtonComponent;
 import io.wispforest.owo.ui.component.Components;
+import io.wispforest.owo.ui.component.EntityComponent;
 import io.wispforest.owo.ui.component.LabelComponent;
 import io.wispforest.owo.ui.container.Containers;
 import io.wispforest.owo.ui.container.FlowLayout;
@@ -21,6 +22,9 @@ import net.cozystudios.rainbowbridge.homeblock.HomeBlockUpdateEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.PositionedSoundInstance;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -31,7 +35,7 @@ import net.minecraft.util.math.BlockPos;
 public class RosterScreen extends BaseUIModelScreen<StackLayout> {
     private int currentPetIndex;
 
-    private DynamicEntityComponent entityBox;
+    private EntityComponent<Entity> entityBox;
 
     private @Nullable StackLayout entityBoxContainer;
 
@@ -195,11 +199,13 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
         // Update entity box
         entityBoxContainer.removeChild(entityBox);
-        DynamicEntityComponent newEntityBox = DynamicEntityComponent.fromPet(newPet, 50);
-        newEntityBox.lookAtCursor();
-        newEntityBox.scaleToFit();
+        @SuppressWarnings("unchecked")
+        var newEntityBox = Components.entity(Sizing.fixed(50), (EntityType<Entity>) newPet.entity.getType(),
+                newPet.entity.writeNbt(new NbtCompound()));
         entityBox = newEntityBox;
         entityBoxContainer.child(entityBox);
+        newEntityBox.lookAtCursor(true);
+        newEntityBox.scaleToFit(true);
 
         // Update name
         LabelComponent nameLabel = this.uiAdapter.rootComponent.childById(LabelComponent.class, "pet-name-label");
