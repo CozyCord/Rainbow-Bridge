@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import net.cozystudios.rainbowbridge.ShoulderAccessor;
+import net.cozystudios.rainbowbridge.accessors.ShoulderAccessor;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 

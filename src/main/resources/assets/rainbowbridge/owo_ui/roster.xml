@@ -165,6 +165,12 @@
                                 <!-- No pets found text -->
                                 <label id="no-pets-message">
                                     <text>You haven't registered any pets yet. Equip a Collar on a pet to register it.</text>
+                                    <sizing>
+                                        <horizontal method="fill">100</horizontal>
+                                    </sizing>
+                                    <margins>
+                                        <top>12</top>
+                                    </margins>
                                 </label>
 
                             </children>

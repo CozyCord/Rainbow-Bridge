@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.jetbrains.annotations.Nullable;
 
-import net.cozystudios.rainbowbridge.ShoulderAccessor;
+import net.cozystudios.rainbowbridge.accessors.ShoulderAccessor;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.TameableEntity;

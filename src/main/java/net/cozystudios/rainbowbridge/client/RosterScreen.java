@@ -187,6 +187,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
             this.currentPet = null;
             this.currentPetIndex = -1;
             this.summonButton.visible = false;
+            return;
         }
 
         List<ClientPetData> pets = ClientPetList.getAllPets();

@@ -21,6 +21,7 @@ import net.minecraft.util.ActionResult;
 
 public class TheRainbowBridge implements ModInitializer {
     public static final String MOD_ID = "rainbowbridge";
+    public static final RainbowBridgeConfig CONFIG = RainbowBridgeConfig.createAndLoad();
 
     // This logger is used to write text to the console and the log file.
     // It is considered best practice to use your mod id as the logger's name.
@@ -87,7 +88,7 @@ public class TheRainbowBridge implements ModInitializer {
                         double x = buf.readDouble();
                         double y = buf.readDouble();
                         double z = buf.readDouble();
-                        Boolean shouldSit = buf.readBoolean();
+                        Boolean shouldWander = buf.readBoolean();
 
                         server.execute(() -> {
                             PetTracker tracker = PetTracker.get(server);
@@ -96,17 +97,24 @@ public class TheRainbowBridge implements ModInitializer {
                                 // Either get the existing entity or recreate it if necessary
                                 var pd = petData.getEntity(server).join();
                                 var entity = pd.entity();
-                                if (entity != null) {
-                                    entity.teleport(x, y, z);
-                                    entity.setSitting(shouldSit);
-                                } else if (pd.shoulderNbt() != null) {
+                                if (entity == null) {
+                                    // Check if entity is on player's shoulder
+                                    if (pd.shoulderNbt() != null) {
+                                        entity = petData.recreateEntity(server);
+                                    }
 
-                                    var newEntity = petData.recreateEntity(server);
-                                    newEntity.teleport(x, y, z);
-                                    newEntity.setSitting(shouldSit);
-                                } else {
-                                    System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
+                                    if (entity == null) {
+                                        System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
+                                    }
                                 }
+
+                                if (shouldWander) {
+                                    TameableWanderHelper.makeTameableWander(entity);
+                                } else {
+                                    entity.setSitting(false);
+                                }
+
+                                entity.teleport(x, y, z);
                             } else {
                                 System.err.println("No pet data found for UUID: " + petUuid);
                             }
