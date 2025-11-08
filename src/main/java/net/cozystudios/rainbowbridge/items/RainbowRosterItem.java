@@ -9,6 +9,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
@@ -22,22 +23,22 @@ public class RainbowRosterItem extends Item {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         // Only open screen on the client side
         if (world.isClient) {
             // If sneak is held down set home block position
-            if (user.isSneaking()) {
-                BlockPos pos = user.getBlockPos();
+            if (player.isSneaking()) {
+                BlockPos pos = player.getBlockPos();
+                RegistryKey<World> dim = player.getWorld().getRegistryKey();
+                RainbowBridgeNet.CHANNEL.clientHandle().send(new HomeUpdatePacket(pos, dim.getValue()));
 
-                RainbowBridgeNet.CHANNEL.clientHandle().send(new HomeUpdatePacket(pos));
-
-                user.sendMessage(Text.translatable("message.rainbowbridge.home_set"));
+                player.sendMessage(Text.translatable("message.rainbowbridge.home_set"));
             } else {
                 openRosterScreen();
-                user.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, 1.0F, 1.0F);
+                player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, 1.0F, 1.0F);
             }
         }
-        return TypedActionResult.success(user.getStackInHand(hand));
+        return TypedActionResult.success(player.getStackInHand(hand));
     }
 
     @Environment(EnvType.CLIENT)

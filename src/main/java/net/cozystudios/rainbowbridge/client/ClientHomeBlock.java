@@ -8,17 +8,20 @@ import org.jetbrains.annotations.Nullable;
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
 import net.cozystudios.rainbowbridge.homeblock.HomeRequestPacket;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlockUpdateEvents;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public class ClientHomeBlock {
 
     private static final List<Runnable> listeners = new ArrayList<>();
     private static @Nullable BlockPos blockPos;
+    private static @Nullable RegistryKey<World> dimension;
 
     static {
         // Subscribe to server updates once when class is loaded
-        HomeBlockUpdateEvents.subscribe((playerUuid, blockPos) -> {
-            set(blockPos);
+        HomeBlockUpdateEvents.subscribe((playerUuid, blockPos, dim) -> {
+            set(blockPos, dim);
         });
     }
 
@@ -34,14 +37,19 @@ public class ClientHomeBlock {
         listeners.clear();
     }
 
-    public static synchronized void set(BlockPos blockPos) {
+    public static synchronized void set(BlockPos blockPos, RegistryKey<World> dim) {
         ClientHomeBlock.blockPos = blockPos;
+        ClientHomeBlock.dimension = dim;
         notifyListeners();
     }
 
     @Nullable
     public static synchronized BlockPos get() {
         return blockPos;
+    }
+
+    public static synchronized RegistryKey<World> getDimKey() {
+        return dimension;
     }
 
     // --- subscription methods ---

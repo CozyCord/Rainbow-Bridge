@@ -64,7 +64,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
         this.homeButton = this.uiAdapter.rootComponent.childById(ButtonComponent.class, "home-button");
 
-        homeUpdateListener = (uuid, newHomePos) -> {
+        homeUpdateListener = (uuid, newHomePos, newDim) -> {
             if (uuid.equals(MinecraftClient.getInstance().player.getUuid())) {
                 homeLabel.text(Text.literal(newHomePos.toShortString()));
                 homeButton.visible = true;
@@ -114,6 +114,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
             double y = mc.player.getY();
             double z = mc.player.getZ();
             boolean shouldSit = false;
+            Identifier dim = mc.player.getWorld().getRegistryKey().getValue();
 
             // Send teleport packet
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
@@ -121,6 +122,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
             buf.writeDouble(x);
             buf.writeDouble(y);
             buf.writeDouble(z);
+            buf.writeIdentifier(dim);
             buf.writeBoolean(shouldSit);
 
             ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TELEPORT, buf);
@@ -145,7 +147,8 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
                 double x = homePos.getX();
                 double y = homePos.getY();
                 double z = homePos.getZ();
-                boolean shouldSit = true;
+                Identifier dimId = ClientHomeBlock.getDimKey().getValue();
+                boolean shouldWander = true;
 
                 // Send teleport packet
                 PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
@@ -153,7 +156,8 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
                 buf.writeDouble(x);
                 buf.writeDouble(y);
                 buf.writeDouble(z);
-                buf.writeBoolean(shouldSit);
+                buf.writeIdentifier(dimId);
+                buf.writeBoolean(shouldWander);
 
                 ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TELEPORT, buf);
             });

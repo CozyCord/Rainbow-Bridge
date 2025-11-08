@@ -31,7 +31,6 @@ public class PetWatcher {
             ServerWorld world = minecraftServer.getWorld(worldKey);
             if (world == null) continue;
 
-
             Entity scannedEntity = world.getEntity(petdata.uuid);
             if (scannedEntity == null) continue;
 

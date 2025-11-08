@@ -12,12 +12,17 @@ import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.cozystudios.rainbowbridge.petdatabase.PetWatcher;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
 public class TheRainbowBridge implements ModInitializer {
     public static final String MOD_ID = "rainbowbridge";
@@ -88,24 +93,26 @@ public class TheRainbowBridge implements ModInitializer {
                         double x = buf.readDouble();
                         double y = buf.readDouble();
                         double z = buf.readDouble();
+                        Identifier dim = buf.readIdentifier();
                         Boolean shouldWander = buf.readBoolean();
 
                         server.execute(() -> {
                             PetTracker tracker = PetTracker.get(server);
                             PetData petData = tracker.getTrackedMap().get(petUuid);
+                            TameableEntity entity = null;
+                            RegistryKey<World> targetWorldKey = RegistryKey.of(RegistryKeys.WORLD, dim);
+
                             if (petData != null) {
                                 // Either get the existing entity or recreate it if necessary
-                                var pd = petData.getEntity(server).join();
-                                var entity = pd.entity();
-                                if (entity == null) {
-                                    // Check if entity is on player's shoulder
-                                    if (pd.shoulderNbt() != null) {
-                                        entity = petData.recreateEntity(server);
-                                    }
+                                var pdh = petData.getEntity(server).join();
+                                if (pdh != null) {
+                                    pdh.entity().discard();
+                                }
+                                    entity = petData.recreateEntity(server, targetWorldKey, x, y, z);
 
-                                    if (entity == null) {
-                                        System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
-                                    }
+                                if (entity == null) {
+                                    System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
+                                    return;
                                 }
 
                                 if (shouldWander) {
@@ -114,7 +121,6 @@ public class TheRainbowBridge implements ModInitializer {
                                     entity.setSitting(false);
                                 }
 
-                                entity.teleport(x, y, z);
                             } else {
                                 System.err.println("No pet data found for UUID: " + petUuid);
                             }
@@ -126,5 +132,15 @@ public class TheRainbowBridge implements ModInitializer {
                                 new PacketByteBuf(Unpooled.buffer()));
                     }
                 });
+
+        ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+            if (entity instanceof TameableEntity) {
+                PetTracker tracker = PetTracker.get(world.getServer());
+                if (tracker.getRecreatedMap().removeIf((uuid) -> uuid.equals(entity.getUuid()))) {
+                    tracker.markDirty();
+                    entity.discard();
+                }
+            }
+        });
     }
 }

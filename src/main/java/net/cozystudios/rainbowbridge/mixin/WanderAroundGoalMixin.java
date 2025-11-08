@@ -8,14 +8,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import net.cozystudios.rainbowbridge.TheRainbowBridge;
 import net.cozystudios.rainbowbridge.accessors.TameableEntityDecorator;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlock;
+import net.cozystudios.rainbowbridge.homeblock.HomeBlock.HomeBlockHandle;
 import net.minecraft.entity.ai.goal.WanderAroundGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec3d;
 
 @Mixin(WanderAroundGoal.class)
@@ -39,10 +38,10 @@ public abstract class WanderAroundGoalMixin {
             if (pet instanceof TameableEntityDecorator
                     && ((TameableEntityDecorator) pet).rainbowbridge_isForceWander()) {
 
-                HomeBlock homes = HomeBlock.get((ServerWorld) pet.getWorld());
-                BlockPos home = homes.getHome(pet.getOwnerUuid());
+                HomeBlock homes = HomeBlock.get((MinecraftServer) pet.getServer());
+                HomeBlockHandle home = homes.getHome(pet.getOwnerUuid());
                 if (home != null) {
-                    Vec3d homePos = Vec3d.ofCenter(home);
+                    Vec3d homePos = Vec3d.ofCenter(home.pos());
                     double wanderRadius = 10; // Distance from home block pet can wander
 
                     if (target.distanceTo(homePos) > wanderRadius) {

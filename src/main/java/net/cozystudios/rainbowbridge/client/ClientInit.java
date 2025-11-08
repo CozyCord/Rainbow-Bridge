@@ -20,6 +20,9 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.world.World;
 
 public class ClientInit implements ClientModInitializer {
     private static KeyBinding openBookKey;
@@ -63,7 +66,8 @@ public class ClientInit implements ClientModInitializer {
         // Listen to home block update packet
         RainbowBridgeNet.CHANNEL.registerClientbound(HomeUpdatePacket.class, ((packet, content) -> {
             MinecraftClient.getInstance().execute(() -> {
-                HomeBlockUpdateEvents.fire(MinecraftClient.getInstance().player.getUuid(), packet.pos());
+                RegistryKey<World> dim = RegistryKey.of(RegistryKeys.WORLD, packet.dimId());
+                HomeBlockUpdateEvents.fire(MinecraftClient.getInstance().player.getUuid(), packet.pos(), dim);
             });
         }));
 
