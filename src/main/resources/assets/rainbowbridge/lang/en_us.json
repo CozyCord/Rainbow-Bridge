@@ -4,5 +4,8 @@
   "category.rainbowbridge.keys": "Rainbow Bridge",
   "key.rainbowbridge.open_book": "Open Pet Roster",
   "message.rainbowbridge.home_set": "Home location set",
-  "text.config.rainbowbridge-config.title": "Rainbow Bridge Options"
+  "text.config.rainbowbridge-config.title": "Rainbow Bridge Options",
+  "tooltip.rainbowbridge.more_info": "Hold Shift for more info",
+  "tooltip.rainbowbridge.collar.info": "Use to make your tamed pet invulnerable. Pets with collars can be tracked in the Roster",
+  "tooltip.rainbowbridge.roster.info": "Tracks pets with the Collar applied. Sneak right click while holding to set home point for your pets"
 }

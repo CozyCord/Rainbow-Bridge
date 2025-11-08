@@ -1,9 +1,14 @@
 package net.cozystudios.rainbowbridge.items;
 
+import java.util.List;
 import java.util.UUID;
+
+import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -11,7 +16,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 
 public class RainbowCollarItem extends Item {
@@ -27,8 +34,8 @@ public class RainbowCollarItem extends Item {
 
         // tell server to track the pet
         PetTracker.get(user.getServer()).addPet(tame, user, item);
-        if (!user.isCreative())item.decrement(1);
-
+        if (!user.isCreative())
+            item.decrement(1);
 
         user.getWorld().playSound(
                 null, // null = broadcast to nearby players
@@ -74,6 +81,17 @@ public class RainbowCollarItem extends Item {
         if (server == null)
             return null;
         return PetTracker.get(server).get(uuid);
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        if (Screen.hasShiftDown()) {
+            tooltip.add(
+                    Text.translatable("tooltip.rainbowbridge.collar.info")
+                            .formatted(Formatting.GRAY));
+        } else {
+            tooltip.add(Text.translatable("tooltip.rainbowbridge.more_info").formatted(Formatting.GRAY));
+        }
     }
 
 }
