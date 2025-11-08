@@ -1,5 +1,6 @@
 package net.cozystudios.rainbowbridge.items;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ public class RainbowCollarItem extends Item {
         tame.setInvulnerable(true);
 
         // tell server to track the pet
-        PetTracker.get(user.getServer()).addPet(tame, user, item);
+        PetTracker.get(user.getServer()).addPet(tame, user, item, Instant.now().toEpochMilli());
         if (!user.isCreative())
             item.decrement(1);
 

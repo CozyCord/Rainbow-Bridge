@@ -1,6 +1,5 @@
 package net.cozystudios.rainbowbridge.petdatabase;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -35,7 +34,7 @@ public class PetData {
     public final UUID ownerUUID;
     public final String ownerName;
     /** The time, in milliseconds, when the pet was tamed */
-    public final long tameDate;
+    public final long tameTimestamp;
     private final NbtCompound entityData;
 
     public NbtCompound getEntityData() {
@@ -55,7 +54,7 @@ public class PetData {
         this.entityData = new NbtCompound();
         tame.saveSelfNbt(this.entityData);
         this.entityData.putString("EntityType", tame.getType().toString());
-        this.tameDate = tameDate;
+        this.tameTimestamp = tameDate;
     }
 
     public PetData(UUID uuid, Identifier dim, BlockPos pos, UUID ownerUUID, String ownerName, NbtCompound collarItem,
@@ -66,7 +65,7 @@ public class PetData {
         this.ownerName = ownerName;
         this.ownerUUID = ownerUUID;
         this.collar = collarItem;
-        this.tameDate = tameDate;
+        this.tameTimestamp = tameDate;
         this.entityData = entityData;
     }
 
@@ -83,7 +82,7 @@ public class PetData {
         tag.putInt("y", position.getY());
         tag.putInt("z", position.getZ());
 
-        tag.putLong("tameDate", tameDate);
+        tag.putLong("tameDate", tameTimestamp);
 
         tag.put("EntityData", entityData);
         return tag;
@@ -211,7 +210,7 @@ public class PetData {
         PetTracker pt = PetTracker.get(server);
         pt.getRecreatedMap().add(uuid); // Mark for deletion
         pt.removePet(server, uuid);
-        pt.addPet(tame, player, ItemStack.fromNbt(this.collar));
+        pt.addPet(tame, player, ItemStack.fromNbt(this.collar), tameTimestamp);
         return tame;
     }
 

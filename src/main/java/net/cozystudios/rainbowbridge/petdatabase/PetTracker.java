@@ -36,11 +36,11 @@ public class PetTracker extends PersistentState {
     private final Map<UUID, PetData> tracked = new HashMap<>();
     private final Set<UUID> recreated = new HashSet<>(); // Entities that have been recreated and must be removed
 
-    public void addPet(TameableEntity tame, PlayerEntity player, ItemStack item) {
+    public void addPet(TameableEntity tame, PlayerEntity player, ItemStack item, long tameTimestamp) {
         TheRainbowBridge.LOGGER.info("adding new entity to be tracked: " + tame.getName());
         NbtCompound collar = new NbtCompound();
         item.writeNbt(collar);
-        tracked.put(tame.getUuid(), new PetData(tame, player, collar, Instant.now().toEpochMilli()));
+        tracked.put(tame.getUuid(), new PetData(tame, player, collar, tameTimestamp));
         var petList = PetTracker.serializePetList(player);
         ServerPlayNetworking.send((ServerPlayerEntity) player, RainbowBridgePackets.RESPONSE_PET_TRACKER, petList);
     }
@@ -78,7 +78,7 @@ public class PetTracker extends PersistentState {
 
     public static PacketByteBuf serializePetList(PlayerEntity player) {
         List<PetData> pets = new ArrayList<>(PetTracker.getAllForPlayer(player));
-        pets.sort((a, b) -> Long.compare(a.tameDate, b.tameDate));
+        pets.sort((a, b) -> Long.compare(a.tameTimestamp, b.tameTimestamp));
 
         PacketByteBuf out = new PacketByteBuf(Unpooled.buffer());
         out.writeInt(pets.size());
