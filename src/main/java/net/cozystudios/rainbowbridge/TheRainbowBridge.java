@@ -59,7 +59,8 @@ public class TheRainbowBridge implements ModInitializer {
                     return ActionResult.PASS;
 
                 ItemStack stack = playerEntity.getStackInHand(hand);
-                if (stack.getItem() instanceof RainbowCollarItem collarItem) {
+                PetTracker tracker = PetTracker.get(playerEntity.getServer());
+                if (stack.getItem() instanceof RainbowCollarItem collarItem && !tracker.getTrackedMap().containsKey(tame.getUuid())) {
                     return collarItem.applyCollar(stack, playerEntity, tame);
                 } else if (stack.isEmpty() && playerEntity.isSneaking()) {
                     ItemStack collar = RainbowCollarItem.getCollar(playerEntity, tame);
