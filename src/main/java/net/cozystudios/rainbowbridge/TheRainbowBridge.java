@@ -1,5 +1,6 @@
 package net.cozystudios.rainbowbridge;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -108,7 +109,7 @@ public class TheRainbowBridge implements ModInitializer {
                                 if (pdh != null) {
                                     pdh.entity().discard();
                                 }
-                                    entity = petData.recreateEntity(server, targetWorldKey, x, y, z);
+                                entity = petData.recreateEntity(server, targetWorldKey, x, y, z);
 
                                 if (entity == null) {
                                     System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
@@ -136,7 +137,9 @@ public class TheRainbowBridge implements ModInitializer {
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity instanceof TameableEntity) {
                 PetTracker tracker = PetTracker.get(world.getServer());
-                if (tracker.getRecreatedMap().removeIf((uuid) -> uuid.equals(entity.getUuid()))) {
+                Set<UUID> recreatedSet = tracker.getRecreatedMap();
+                if (recreatedSet.contains(entity.getUuid())) {
+                    recreatedSet.remove(entity.getUuid());
                     tracker.markDirty();
                     entity.discard();
                 }

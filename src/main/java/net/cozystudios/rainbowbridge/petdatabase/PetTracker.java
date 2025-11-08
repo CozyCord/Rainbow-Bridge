@@ -3,8 +3,10 @@ package net.cozystudios.rainbowbridge.petdatabase;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import io.netty.buffer.Unpooled;
@@ -32,7 +34,7 @@ import net.minecraft.world.World;
 
 public class PetTracker extends PersistentState {
     private final Map<UUID, PetData> tracked = new HashMap<>();
-    private final List<UUID> recreated = new ArrayList<>(); // Entities that have been recreated and must be removed
+    private final Set<UUID> recreated = new HashSet<>(); // Entities that have been recreated and must be removed
 
     public void addPet(TameableEntity tame, PlayerEntity player, ItemStack item) {
         TheRainbowBridge.LOGGER.info("adding new entity to be tracked: " + tame.getName());
@@ -55,7 +57,7 @@ public class PetTracker extends PersistentState {
     }
 
     /** Map of entities marked for deletion */
-    public List<UUID> getRecreatedMap() {
+    public Set<UUID> getRecreatedMap() {
         return recreated;
     }
 
