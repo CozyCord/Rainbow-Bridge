@@ -1,7 +1,9 @@
 package net.cozystudios.rainbowbridge;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,7 @@ import net.minecraft.world.World;
 public class TheRainbowBridge implements ModInitializer {
     public static final String MOD_ID = "rainbowbridge";
     public static final RainbowBridgeConfig CONFIG = RainbowBridgeConfig.createAndLoad();
+    private final Map<UUID, Object> teleportLocks = new ConcurrentHashMap<>();
 
     // This logger is used to write text to the console and the log file.
     // It is considered best practice to use your mod id as the logger's name.
@@ -60,13 +63,19 @@ public class TheRainbowBridge implements ModInitializer {
 
                 ItemStack stack = playerEntity.getStackInHand(hand);
                 PetTracker tracker = PetTracker.get(playerEntity.getServer());
-                if (stack.getItem() instanceof RainbowCollarItem collarItem && !tracker.getTrackedMap().containsKey(tame.getUuid())) {
+                PetData pd = tracker.getByEntityId(tame.getUuid());
+                if (stack.getItem() instanceof RainbowCollarItem collarItem && pd == null) {
                     return collarItem.applyCollar(stack, playerEntity, tame);
                 } else if (stack.isEmpty() && playerEntity.isSneaking()) {
-                    ItemStack collar = RainbowCollarItem.getCollar(playerEntity, tame);
+                    ItemStack collar = RainbowCollarItem.getCollar(playerEntity, tame, pd);
                     if (collar == null)
                         return ActionResult.PASS;
-                    RainbowCollarItem.removePet(tame);
+                    if (pd == null) {
+                        System.err.println(
+                                "[RainbowBridge] Unable to find PetData for tracked entity " + tame.getUuidAsString());
+                        return ActionResult.PASS;
+                    }
+                    RainbowCollarItem.removePet(tame, pd);
 
                     playerEntity.giveItemStack(collar);
                     return ActionResult.CONSUME;
@@ -99,33 +108,39 @@ public class TheRainbowBridge implements ModInitializer {
                         Boolean shouldWander = buf.readBoolean();
 
                         server.execute(() -> {
-                            PetTracker tracker = PetTracker.get(server);
-                            PetData petData = tracker.getTrackedMap().get(petUuid);
-                            TameableEntity entity = null;
-                            RegistryKey<World> targetWorldKey = RegistryKey.of(RegistryKeys.WORLD, dim);
+                            Object lock = teleportLocks.computeIfAbsent(petUuid, k -> new Object());
+                            synchronized (lock) {
 
-                            if (petData != null) {
-                                var pdh = petData.getEntity(server).join();
+                                PetTracker tracker = PetTracker.get(server);
+                                PetData petData = tracker.getTrackedMap().get(petUuid);
+                                TameableEntity entity = null;
+                                RegistryKey<World> targetWorldKey = RegistryKey.of(RegistryKeys.WORLD, dim);
 
-                                // Discard entity if it exists
-                                if (pdh.entity() != null) {
-                                    pdh.entity().discard();
-                                }
-                                entity = petData.recreateEntity(server, targetWorldKey, x, y, z);
+                                if (petData != null) {
+                                    var pdh = petData.getEntity(server).join();
 
-                                if (entity == null) {
-                                    System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
-                                    return;
-                                }
+                                    // Discard entity if it exists
+                                    if (pdh != null && pdh.entity() != null) {
+                                        pdh.entity().discard();
+                                    }
+                                    entity = petData.recreateEntity(server, targetWorldKey, x, y, z);
 
-                                if (shouldWander) {
-                                    TameableWanderHelper.makeTameableWander(entity);
+                                    if (entity == null) {
+                                        System.err.println("Failed to recreate entity for pet UUID: " + petUuid);
+                                        return;
+                                    }
+
+                                    if (shouldWander) {
+                                        TameableWanderHelper.makeTameableWander(entity);
+                                    } else {
+                                        entity.setSitting(false);
+                                    }
+
                                 } else {
-                                    entity.setSitting(false);
+                                    System.err.println("No pet data found for UUID: " + petUuid);
                                 }
 
-                            } else {
-                                System.err.println("No pet data found for UUID: " + petUuid);
+                                teleportLocks.remove(petUuid);
                             }
                         });
                     } catch (Exception e) {
@@ -136,14 +151,25 @@ public class TheRainbowBridge implements ModInitializer {
                     }
                 });
 
+        // Remove entities that have been duplicated and marked as such
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity instanceof TameableEntity) {
                 PetTracker tracker = PetTracker.get(world.getServer());
                 Set<UUID> recreatedSet = tracker.getRecreatedMap();
-                if (recreatedSet.contains(entity.getUuid())) {
-                    recreatedSet.remove(entity.getUuid());
+                if (recreatedSet.remove(entity.getUuid())) {
                     tracker.markDirty();
-                    entity.discard();
+                    world.getServer().execute(() -> entity.discard()); // run next tick
+                }
+            }
+        });
+
+        // Snapshot entity to PetData NBT when unloaded
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
+            if (entity instanceof TameableEntity tame && !world.isClient) {
+                PetTracker tracker = PetTracker.get(world.getServer());
+                PetData pd = tracker.getByEntityId(tame.getUuid());
+                if (pd != null) {
+                    pd.updateEntityData(nbt -> tame.writeNbt(nbt));
                 }
             }
         });

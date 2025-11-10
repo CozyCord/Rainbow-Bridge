@@ -118,7 +118,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
             // Send teleport packet
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-            buf.writeUuid(currentPet.entity.getUuid());
+            buf.writeUuid(currentPet.uuid);
             buf.writeDouble(x);
             buf.writeDouble(y);
             buf.writeDouble(z);
@@ -152,7 +152,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
                 // Send teleport packet
                 PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                buf.writeUuid(currentPet.entity.getUuid());
+                buf.writeUuid(currentPet.uuid);
                 buf.writeDouble(x);
                 buf.writeDouble(y);
                 buf.writeDouble(z);

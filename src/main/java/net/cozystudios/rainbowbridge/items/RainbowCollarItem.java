@@ -48,12 +48,11 @@ public class RainbowCollarItem extends Item {
         return ActionResult.SUCCESS;
     }
 
-    public static ItemStack getCollar(PlayerEntity user, TameableEntity tame) {
+    public static ItemStack getCollar(PlayerEntity user, TameableEntity tame, PetData petData) {
         MinecraftServer server = tame.getWorld().getServer();
         if (server == null)
             return null;
-        PetData data = PetTracker.get(server).get(tame.getUuid());
-        if (data == null)
+        if (petData == null)
             return null;
 
         user.getWorld().playSound(
@@ -62,14 +61,14 @@ public class RainbowCollarItem extends Item {
                 SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, // pick any sound here
                 SoundCategory.PLAYERS,
                 1.0F, 1.0F);
-        return ItemStack.fromNbt(data.collar);
+        return ItemStack.fromNbt(petData.collar);
     }
 
-    public static void removePet(TameableEntity tame) {
+    public static void removePet(TameableEntity tame, PetData petData) {
         MinecraftServer server = tame.getWorld().getServer();
         if (server == null)
             return;
-        PetTracker.get(server).removePet(server, tame.getUuid());
+        PetTracker.get(server).removePet(server, petData.uuid);
         tame.setInvulnerable(false);
     }
 

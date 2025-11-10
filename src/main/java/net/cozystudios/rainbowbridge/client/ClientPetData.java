@@ -1,5 +1,7 @@
 package net.cozystudios.rainbowbridge.client;
 
+import java.util.UUID;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -8,11 +10,13 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
 public class ClientPetData {
+    public final UUID uuid;
     public final String name;
     public final String position;
     public final Entity entity;
 
-    public ClientPetData(String entityType, NbtCompound entityData, String name, String position) {
+    public ClientPetData(UUID uuid, String entityType, NbtCompound entityData, String name, String position) {
+        this.uuid = uuid;
         this.name = name;
         this.position = position;
         EntityType<?> type = Registries.ENTITY_TYPE.get(new Identifier(entityType));
