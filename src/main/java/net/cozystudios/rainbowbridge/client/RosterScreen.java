@@ -70,9 +70,9 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         this.homeButton = this.uiAdapter.rootComponent.childById(ButtonComponent.class, "home-button");
 
         homeUpdateListener = (uuid, newHomePos, newDim) -> {
-            if (uuid.equals(MinecraftClient.getInstance().player.getUuid())) {
+            if (uuid.equals(MinecraftClient.getInstance().player.getUuid()) && currentPet != null) {
                 homeLabel.text(Text.literal(newHomePos.toShortString()));
-                homeButton.active = true;
+                homeButton.visible = true;
             }
         };
 
@@ -80,9 +80,9 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
         // Get home position
         BlockPos homePos = ClientHomeBlock.get();
-        if (homePos != null) {
+        if (homePos != null && currentPet != null) {
             homeLabel.text(Text.literal(homePos.toShortString()));
-            homeButton.active = true;
+            homeButton.visible = true;
         }
 
         // Subscribe for live updates
@@ -137,6 +137,11 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
         // Home button
         this.homeButton = this.uiAdapter.rootComponent.childById(ButtonComponent.class, "home-button");
+        this.homeLabel = this.uiAdapter.rootComponent.childById(LabelComponent.class, "home-position-label");
+        homeButton.visible = currentPet != null;
+        if (currentPet == null) {
+            homeLabel.text(Text.literal(""));
+        }
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player != null) {
 
@@ -198,6 +203,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
             this.currentPet = null;
             this.currentPetIndex = -1;
             this.summonButton.visible = false;
+            this.homeButton.visible = false;
             return;
         }
 
@@ -207,7 +213,9 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         this.currentPetIndex = pets.indexOf(newPet);
         this.currentPet = newPet;
 
-        this.summonButton.visible = true; // Show summon button
+        // Update command buttons
+        this.summonButton.visible = true;
+        this.homeButton.visible = true;
 
         // Update entity box
         entityBoxContainer.removeChild(entityBox);
@@ -227,10 +235,13 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         nameLabel.text(Text.literal(clipped));
         nameLabel.tooltip(Text.literal(newPet.name));
 
-        // Update position
+        // Update positions
         LabelComponent positionLabel = this.uiAdapter.rootComponent.childById(LabelComponent.class,
                 "pet-position-label");
         positionLabel.text(Text.literal(newPet.position));
+        this.homeLabel = this.uiAdapter.rootComponent.childById(LabelComponent.class,
+                "home-position-label");
+        this.homeLabel.text(Text.literal(ClientHomeBlock.get().toShortString()));
     }
 
     public void setPets(List<ClientPetData> pets) {
