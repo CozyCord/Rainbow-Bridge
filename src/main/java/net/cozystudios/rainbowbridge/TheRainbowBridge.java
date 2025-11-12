@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.buffer.Unpooled;
+import net.cozystudios.rainbowbridge.accessors.TameableEntityDecorator;
 import net.cozystudios.rainbowbridge.items.RainbowCollarItem;
 import net.cozystudios.rainbowbridge.items.TheRainbowBridgeItems;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
@@ -63,7 +64,7 @@ public class TheRainbowBridge implements ModInitializer {
 
                 ItemStack stack = playerEntity.getStackInHand(hand);
                 PetTracker tracker = PetTracker.get(playerEntity.getServer());
-                PetData pd = tracker.getByEntityId(tame.getUuid());
+                PetData pd = tracker.getByEntityId(((TameableEntityDecorator) tame).rainbowbridge_getUuid());
                 if (stack.getItem() instanceof RainbowCollarItem collarItem && pd == null) {
                     return collarItem.applyCollar(stack, playerEntity, tame);
                 } else if (stack.isEmpty() && playerEntity.isSneaking()) {
