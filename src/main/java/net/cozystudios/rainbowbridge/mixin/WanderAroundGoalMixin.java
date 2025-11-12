@@ -21,7 +21,7 @@ import net.minecraft.util.math.Vec3d;
 public abstract class WanderAroundGoalMixin {
     @Shadow
     @Final
-    private PathAwareEntity mob; // shadow the private field
+    private PathAwareEntity mob;
 
     @Shadow
     @Nullable
