@@ -36,7 +36,7 @@ public class PetData {
     public final String ownerName;
     /** The time, in milliseconds, when the pet was tamed */
     public final long tameTimestamp;
-    private final NbtCompound entityData;
+    private NbtCompound entityData;
 
     public NbtCompound getEntityData() {
         return entityData;
@@ -201,8 +201,10 @@ public class PetData {
         // Remove sitting because we can't rely on entity.setSitting to work on new
         // entities
         nbtCopy.remove("Sitting");
+        nbtCopy.remove("DeathTime");
 
         tame.readNbt(nbtCopy);
+        entityData = nbtCopy;
         server.getWorld(worldKey).spawnEntity(tame);
 
         tame.refreshPositionAndAngles(x, y, z, entity.getYaw(), entity.getPitch());
