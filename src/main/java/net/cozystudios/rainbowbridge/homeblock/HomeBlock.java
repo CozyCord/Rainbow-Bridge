@@ -73,7 +73,6 @@ public class HomeBlock extends PersistentState {
     public void setHome(ServerPlayerEntity player, BlockPos pos, RegistryKey<World> dim) {
         playerHomes.put(player.getUuid(), new HomeBlockHandle(pos, dim));
 
-        // HomeBlockUpdateEvents.fire(player.getUuid(), pos, dim);
         RainbowBridgeNet.CHANNEL.serverHandle(player).send(new HomeUpdatePacket(pos, dim.getValue()));
 
         markDirty(); // tells Minecraft to save this state
@@ -100,7 +99,6 @@ public class HomeBlock extends PersistentState {
 
     public void removeHome(ServerPlayerEntity player) {
         if (playerHomes.remove(player.getUuid()) != null) {
-            // HomeBlockUpdateEvents.fire(playerUuid, null, null);
             RainbowBridgeNet.CHANNEL.serverHandle(player).send(new HomeUpdatePacket(null, null));
             markDirty();
         }
