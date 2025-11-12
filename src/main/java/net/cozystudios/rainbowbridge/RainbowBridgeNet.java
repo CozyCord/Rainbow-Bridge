@@ -22,7 +22,7 @@ public class RainbowBridgeNet {
 
             // Get the persistent HomeBlock instance for this world
             HomeBlock homes = HomeBlock.get(player.getServer());
-            HomeBlockHandle hbh = homes.getHome(player);
+            HomeBlockHandle hbh = homes.getHome(player.getServer(), player.getUuid());
 
             if (hbh != null) {
                 // Send it back to the client

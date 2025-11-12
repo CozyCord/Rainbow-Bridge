@@ -49,6 +49,10 @@ public class PetTracker extends PersistentState {
     public void removePet(MinecraftServer server, UUID uuid) {
         var player = server.getPlayerManager().getPlayer(tracked.get(uuid).ownerUUID);
         tracked.remove(uuid);
+        if (player == null) {
+            System.err.println("[RainbowBridge] Could not find player to update pet list for removed pet: " + uuid);
+            return;
+        }
         var petList = PetTracker.serializePetList(player);
         ServerPlayNetworking.send((ServerPlayerEntity) player, RainbowBridgePackets.RESPONSE_PET_TRACKER, petList);
     }

@@ -80,13 +80,16 @@ public class HomeBlock extends PersistentState {
     }
 
     @Nullable
-    public HomeBlockHandle getHome(ServerPlayerEntity player) {
-        var home = playerHomes.get(player.getUuid());
+    public HomeBlockHandle getHome(MinecraftServer server, UUID playerUuid) {
+        var home = playerHomes.get(playerUuid);
         if (home == null) {
-            home = new HomeBlockHandle(player.getSpawnPointPosition(), player.getSpawnPointDimension());
+            var player = server.getPlayerManager().getPlayer(playerUuid);
+            if (player != null) {
+                home = new HomeBlockHandle(player.getSpawnPointPosition(), player.getSpawnPointDimension());
+            }
         }
         if (home.pos() == null) {
-            home = new HomeBlockHandle(player.getWorld().getSpawnPos(), player.getWorld().getRegistryKey());
+            home = new HomeBlockHandle(server.getOverworld().getSpawnPos(), server.getOverworld().getRegistryKey());
         }
         return home;
     }
