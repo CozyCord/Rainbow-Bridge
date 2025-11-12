@@ -3,10 +3,10 @@ package net.cozystudios.rainbowbridge.homeblock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.cozystudios.rainbowbridge.RainbowBridgeNet;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -73,7 +73,8 @@ public class HomeBlock extends PersistentState {
     public void setHome(ServerPlayerEntity player, BlockPos pos, RegistryKey<World> dim) {
         playerHomes.put(player.getUuid(), new HomeBlockHandle(pos, dim));
 
-        HomeBlockUpdateEvents.fire(player.getUuid(), pos, dim);
+        // HomeBlockUpdateEvents.fire(player.getUuid(), pos, dim);
+        RainbowBridgeNet.CHANNEL.serverHandle(player).send(new HomeUpdatePacket(pos, dim.getValue()));
 
         markDirty(); // tells Minecraft to save this state
     }
@@ -87,9 +88,10 @@ public class HomeBlock extends PersistentState {
         return playerHomes.containsKey(playerUuid);
     }
 
-    public void removeHome(UUID playerUuid) {
-        if (playerHomes.remove(playerUuid) != null) {
-            HomeBlockUpdateEvents.fire(playerUuid, null, null);
+    public void removeHome(ServerPlayerEntity player) {
+        if (playerHomes.remove(player.getUuid()) != null) {
+            // HomeBlockUpdateEvents.fire(playerUuid, null, null);
+            RainbowBridgeNet.CHANNEL.serverHandle(player).send(new HomeUpdatePacket(null, null));
             markDirty();
         }
     }

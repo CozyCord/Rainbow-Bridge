@@ -4,6 +4,7 @@ import io.wispforest.owo.network.OwoNetChannel;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlock;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlock.HomeBlockHandle;
 import net.cozystudios.rainbowbridge.homeblock.HomeRequestPacket;
+import net.cozystudios.rainbowbridge.homeblock.HomeSetRequestPacket;
 import net.cozystudios.rainbowbridge.homeblock.HomeUpdatePacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -29,7 +30,7 @@ public class RainbowBridgeNet {
             }
         });
 
-        RainbowBridgeNet.CHANNEL.registerServerbound(HomeUpdatePacket.class, (packet, handler) -> {
+        RainbowBridgeNet.CHANNEL.registerServerbound(HomeSetRequestPacket.class, (packet, handler) -> {
             HomeBlock.get(handler.player().getServer()).setHome(handler.player(), packet.pos(),
                     RegistryKey.of(RegistryKeys.WORLD, packet.dimId()));
         });

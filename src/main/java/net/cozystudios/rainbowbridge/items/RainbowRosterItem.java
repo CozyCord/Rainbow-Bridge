@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
 import net.cozystudios.rainbowbridge.client.RosterScreen;
-import net.cozystudios.rainbowbridge.homeblock.HomeUpdatePacket;
+import net.cozystudios.rainbowbridge.homeblock.HomeSetRequestPacket;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -37,7 +37,7 @@ public class RainbowRosterItem extends Item {
             if (player.isSneaking()) {
                 BlockPos pos = player.getBlockPos();
                 RegistryKey<World> dim = player.getWorld().getRegistryKey();
-                RainbowBridgeNet.CHANNEL.clientHandle().send(new HomeUpdatePacket(pos, dim.getValue()));
+                RainbowBridgeNet.CHANNEL.clientHandle().send(new HomeSetRequestPacket(pos, dim.getValue()));
 
                 player.sendMessage(Text.translatable("message.rainbowbridge.home_set"));
             } else {
