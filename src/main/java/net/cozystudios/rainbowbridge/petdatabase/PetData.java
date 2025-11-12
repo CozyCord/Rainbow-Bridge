@@ -208,30 +208,8 @@ public class PetData {
         tame.refreshPositionAndAngles(x, y, z, entity.getYaw(), entity.getPitch());
         PetTracker pt = PetTracker.get(server);
         pt.getRecreatedMap().add(oldUuid); // Mark for deletion
-        // pt.removePet(server, uuid);
-        // pt.addPet(tame, player, ItemStack.fromNbt(this.collar), tameTimestamp);
         return tame;
     }
-
-    // /** Load chunk(s) pet entity is in */
-    // protected CompletableFuture<Boolean> loadChunks(MinecraftServer server) {
-    // // RegistryKey<World> worldKey = RegistryKey.of(RegistryKeys.WORLD,
-    // this.dim);
-    // ServerWorld world = server.getWorld(worldKey);
-    // if (world != null) {
-    // // Ensure chunk is loaded (force load if needed)
-    // world.getChunkManager().addTicket(
-    // ChunkTicketType.START,
-    // new ChunkPos(position),
-    // 2,
-    // Unit.INSTANCE);
-    // world.getChunk(position);
-    // return CompletableFuture
-    // .completedFuture(true);
-    // } else {
-    // return CompletableFuture.completedFuture(null);
-    // }
-    // }
 
     private boolean entityDataMatchesShoulder(NbtCompound shoulderNbt, NbtCompound savedEntityData) {
         // Compare type
