@@ -17,7 +17,9 @@ import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 
 @Mixin(TameableEntity.class)
 public abstract class TameableEntityMixin implements TameableEntityDecorator {
@@ -64,6 +66,26 @@ public abstract class TameableEntityMixin implements TameableEntityDecorator {
     @Inject(method = "setSitting", at = @At("HEAD"))
     private void onSetSitting(boolean sitting, CallbackInfo ci) {
         this.rainbowbridge_forceWander = false;
+        TameableEntity self = (TameableEntity) (Object) this;
+
+        if (!self.getWorld().isClient()) {
+
+            MinecraftServer server = self.getWorld().getServer();
+            if (server == null)
+                return;
+
+            PetData data = PetTracker.get(server).get( ((TameableEntityDecorator) self).rainbowbridge_getUuid());
+            if (data == null)
+                return;
+            ((ServerWorld) self.getWorld()).spawnParticles(
+                    ParticleTypes.HEART,
+                    self.getX(),
+                    self.getBodyY(1),
+                    self.getZ(),
+                    1,
+                    0.3, 0.3, 0.3,
+                    0.02);
+        }
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
