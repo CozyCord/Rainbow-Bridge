@@ -39,7 +39,7 @@ public abstract class WanderAroundGoalMixin {
                     && ((TameableEntityDecorator) pet).rainbowbridge_isForceWander()) {
 
                 HomeBlock homes = HomeBlock.get((MinecraftServer) pet.getServer());
-                HomeBlockHandle home = homes.getHome(pet.getOwnerUuid());
+                HomeBlockHandle home = homes.getHome(pet.getServer().getPlayerManager().getPlayer(pet.getOwnerUuid()));
                 if (home != null) {
                     Vec3d homePos = Vec3d.ofCenter(home.pos());
                     double wanderRadius = 10; // Distance from home block pet can wander

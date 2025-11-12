@@ -104,18 +104,18 @@
                                             </margins>
                                         </stack-layout>
 
-                                        <flow-layout direction="vertical">
+                                        <flow-layout direction="vertical" id="command-buttons">
                                             <children>
                                                 <!-- Summon button -->
                                                 <button id="summon-button">
                                                     <sizing>
-                                                        <horizontal method="fixed">46</horizontal>
-                                                        <vertical method="fixed">23</vertical>
+                                                        <horizontal method="fixed">42</horizontal>
+                                                        <vertical method="fixed">21</vertical>
                                                     </sizing>
                                                     <renderer>
                                                         <texture u="0" v="0"
                                                             texture="rainbowbridge:textures/gui/command_buttons.png"
-                                                            texture-width="92" texture-height="46" />
+                                                            texture-width="84" texture-height="63" />
                                                     </renderer>
                                                     <margins>
                                                         <bottom>4</bottom>
@@ -125,15 +125,27 @@
                                                 <!-- Send home button -->
                                                 <button id="home-button">
                                                     <sizing>
-                                                        <horizontal method="fixed">46</horizontal>
-                                                        <vertical method="fixed">23</vertical>
+                                                        <horizontal method="fixed">42</horizontal>
+                                                        <vertical method="fixed">21</vertical>
                                                     </sizing>
                                                     <renderer>
-                                                        <texture u="46" v="0"
+                                                        <texture u="42" v="0"
                                                             texture="rainbowbridge:textures/gui/command_buttons.png"
-                                                            texture-width="92" texture-height="46" />
+                                                            texture-width="84" texture-height="63" />
                                                     </renderer>
                                                 </button>
+
+                                                                                                <!-- <component id="home-button" class="net.cozystudios.rainbowbridge.client.TooltipButton">
+                                                    <sizing>
+                                                        <horizontal method="fixed">42</horizontal>
+                                                        <vertical method="fixed">21</vertical>
+                                                    </sizing>
+                                                    <renderer>
+                                                        <texture u="42" v="0"
+                                                            texture="rainbowbridge:textures/gui/command_buttons.png"
+                                                            texture-width="84" texture-height="63" />
+                                                    </renderer>
+                                                </component> -->
 
                                             </children>
 

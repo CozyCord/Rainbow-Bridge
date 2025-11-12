@@ -80,8 +80,15 @@ public class HomeBlock extends PersistentState {
     }
 
     @Nullable
-    public HomeBlockHandle getHome(UUID playerUuid) {
-        return playerHomes.get(playerUuid);
+    public HomeBlockHandle getHome(ServerPlayerEntity player) {
+        var home = playerHomes.get(player.getUuid());
+        if (home == null) {
+            home = new HomeBlockHandle(player.getSpawnPointPosition(), player.getSpawnPointDimension());
+        }
+        if (home.pos() == null) {
+            home = new HomeBlockHandle(player.getWorld().getSpawnPos(), player.getWorld().getRegistryKey());
+        }
+        return home;
     }
 
     public boolean hasHome(UUID playerUuid) {

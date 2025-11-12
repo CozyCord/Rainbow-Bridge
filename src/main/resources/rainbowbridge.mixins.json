@@ -7,7 +7,8 @@
 		"MobEntityMixin",
 		"PlayerEntityMixin",
 		"FollowOwnerGoalMixin",
-		"WanderAroundGoalMixin"
+		"WanderAroundGoalMixin",
+		"ServerPlayerEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

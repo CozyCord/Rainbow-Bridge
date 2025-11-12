@@ -1,6 +1,7 @@
 package net.cozystudios.rainbowbridge.client;
 
 import java.util.List;
+
 import org.jetbrains.annotations.Nullable;
 
 import io.netty.buffer.Unpooled;
@@ -27,8 +28,12 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
@@ -67,7 +72,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         homeUpdateListener = (uuid, newHomePos, newDim) -> {
             if (uuid.equals(MinecraftClient.getInstance().player.getUuid())) {
                 homeLabel.text(Text.literal(newHomePos.toShortString()));
-                homeButton.visible = true;
+                homeButton.active = true;
             }
         };
 
@@ -77,7 +82,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         BlockPos homePos = ClientHomeBlock.get();
         if (homePos != null) {
             homeLabel.text(Text.literal(homePos.toShortString()));
-            homeButton.visible = true;
+            homeButton.active = true;
         }
 
         // Subscribe for live updates
@@ -136,7 +141,6 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         if (mc.player != null) {
 
             BlockPos homePos = ClientHomeBlock.get();
-            this.homeButton.visible = homePos != null;
             this.homeButton.onPress(button -> {
                 if (homePos == null) {
                     return;
@@ -162,6 +166,9 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
                 ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TELEPORT, buf);
             });
         }
+
+        // rootComponent.childById(FlowLayout.class,
+        // "command-buttons").child(this.homeButton);
 
         StackLayout container = rootComponent.childById(StackLayout.class, "entity-box-container");
 
