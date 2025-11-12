@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
 import net.cozystudios.rainbowbridge.client.RosterScreen;
-import net.cozystudios.rainbowbridge.homeblock.HomeSetRequestPacket;
+import net.cozystudios.rainbowbridge.homeblock.DefaultSetHomeRequestPacket;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -37,9 +37,9 @@ public class RainbowRosterItem extends Item {
             if (player.isSneaking()) {
                 BlockPos pos = player.getBlockPos();
                 RegistryKey<World> dim = player.getWorld().getRegistryKey();
-                RainbowBridgeNet.CHANNEL.clientHandle().send(new HomeSetRequestPacket(pos, dim.getValue()));
+                RainbowBridgeNet.CHANNEL.clientHandle().send(new DefaultSetHomeRequestPacket(pos, dim.getValue()));
 
-                player.sendMessage(Text.translatable("message.rainbowbridge.home_set"));
+                player.sendMessage(Text.translatable("message.rainbowbridge.default_home_set"));
             } else {
                 openRosterScreen();
                 player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, 1.0F, 1.0F);

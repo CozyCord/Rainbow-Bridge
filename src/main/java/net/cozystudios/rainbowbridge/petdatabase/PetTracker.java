@@ -108,6 +108,8 @@ public class PetTracker extends PersistentState {
             }
 
             out.writeString(pet.position.toShortString());
+            out.writeLong(pet.homePosition != null ? pet.homePosition.asLong() : 0L);
+            out.writeString(pet.homeDimension != null ? pet.homeDimension.getValue().toString() : "");
         }
 
         return out;

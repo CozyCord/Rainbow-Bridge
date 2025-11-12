@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.cozystudios.rainbowbridge.RainbowBridgeNet;
+import net.cozystudios.rainbowbridge.homeblock.HomeSetRequestPacket;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.minecraft.client.gui.screen.Screen;
@@ -14,12 +16,18 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class RainbowCollarItem extends Item {
@@ -29,15 +37,50 @@ public class RainbowCollarItem extends Item {
         super(settings);
     }
 
+    @Override
+    public boolean hasGlint(ItemStack stack) {
+        NbtCompound nbt = stack.getNbt();
+        return nbt != null && nbt.contains("HomePos");
+    }
+
+    @Override
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        if (world.isClient) {
+            ItemStack stack = player.getStackInHand(hand);
+
+            // If sneak is held down set home block position for collar
+            if (player.isSneaking()) {
+                BlockPos pos = player.getBlockPos();
+                RegistryKey<World> dim = player.getWorld().getRegistryKey();
+                NbtCompound nbt = stack.getOrCreateNbt();
+                nbt.putLong("HomePos", pos.asLong());
+                nbt.putString("HomeDim", dim.getValue().toString());
+                stack.setNbt(nbt);
+                player.sendMessage(Text.translatable("message.rainbowbridge.home_set"));
+            }
+        }
+        return TypedActionResult.success(player.getStackInHand(hand));
+    }
+
     public ActionResult applyCollar(ItemStack item, PlayerEntity user, TameableEntity tame) {
         // maybe a config setting here or something
         tame.setInvulnerable(true);
 
+        var tracker = PetTracker.get(user.getServer());
         // tell server to track the pet
-        PetTracker.get(user.getServer()).addPet(tame, user, item, Instant.now().toEpochMilli());
+        tracker.addPet(tame, user, item, Instant.now().toEpochMilli());
         if (!user.isCreative())
             item.decrement(1);
 
+        PetData pd = tracker.getByEntityId(tame.getUuid());
+        var pos = item.hasNbt() && item.getNbt().contains("HomePos")
+                ? BlockPos.fromLong(item.getNbt().getLong("HomePos"))
+                : null;
+        var dim = item.hasNbt() && item.getNbt().contains("HomeDim")
+                ? new Identifier(item.getNbt().getString("HomeDim"))
+                : null;
+
+        RainbowBridgeNet.CHANNEL.clientHandle().send(new HomeSetRequestPacket(pd.uuid, pos, dim));
         user.getWorld().playSound(
                 null, // null = broadcast to nearby players
                 tame.getBlockPos(), // sound position
@@ -85,6 +128,14 @@ public class RainbowCollarItem extends Item {
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+        NbtCompound nbt = stack.getNbt();
+        if (nbt != null && nbt.contains("HomePos")) {
+            BlockPos pos = BlockPos.fromLong(nbt.getLong("HomePos"));
+
+            tooltip.add(Text.literal("Home Position: ")
+                    .append(Text.literal(pos.getX() + ", " + pos.getY() + ", " + pos.getZ())
+                            .formatted(Formatting.AQUA)));
+        }
         if (Screen.hasShiftDown()) {
             tooltip.add(
                     Text.translatable("tooltip.rainbowbridge.collar.info")

@@ -1,8 +1,11 @@
 package net.cozystudios.rainbowbridge;
 
 import io.wispforest.owo.network.OwoNetChannel;
+import net.cozystudios.rainbowbridge.homeblock.DefaultSetHomeRequestPacket;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlock;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlock.HomeBlockHandle;
+import net.cozystudios.rainbowbridge.petdatabase.PetData;
+import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.cozystudios.rainbowbridge.homeblock.HomeRequestPacket;
 import net.cozystudios.rainbowbridge.homeblock.HomeSetRequestPacket;
 import net.cozystudios.rainbowbridge.homeblock.HomeUpdatePacket;
@@ -31,7 +34,17 @@ public class RainbowBridgeNet {
             }
         });
 
+        // Set individual pet home block
         RainbowBridgeNet.CHANNEL.registerServerbound(HomeSetRequestPacket.class, (packet, handler) -> {
+            PetData pd = PetTracker.get(handler.player().getServer()).get(packet.uuid());
+            if (pd != null) {
+                pd.homePosition = packet.pos();
+                pd.homeDimension = RegistryKey.of(RegistryKeys.WORLD, packet.dimId());
+            }
+        });
+
+        // Set default home block
+        RainbowBridgeNet.CHANNEL.registerServerbound(DefaultSetHomeRequestPacket.class, (packet, handler) -> {
             HomeBlock.get(handler.player().getServer()).setHome(handler.player(), packet.pos(),
                     RegistryKey.of(RegistryKeys.WORLD, packet.dimId()));
         });

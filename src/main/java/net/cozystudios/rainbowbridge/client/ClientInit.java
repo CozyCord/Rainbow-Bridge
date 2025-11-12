@@ -23,6 +23,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class ClientInit implements ClientModInitializer {
@@ -55,8 +57,19 @@ public class ClientInit implements ClientModInitializer {
                         NbtCompound nbt = buf.readNbt();
                         String name = buf.readString(32767);
                         String position = buf.readString(32767);
+                        long homePosLong = buf.readLong();
+                        BlockPos homePosition = null;
+                        if (homePosLong != 0L) {
+                            homePosition = BlockPos.fromLong(homePosLong);
+                        }
+                        Identifier homeDimension = null;
+                        String homeDimStr = buf.readString(32767);
+                        if (!homeDimStr.isEmpty()) {
+                            homeDimension = new Identifier(homeDimStr);
+                        }
 
-                        pets.add(new ClientPetData(uuid, entityTypeId, nbt, name, position));
+                        pets.add(new ClientPetData(uuid, entityTypeId, nbt, name, position, homePosition,
+                                homeDimension));
                     }
 
                     // update GUI on the main thread

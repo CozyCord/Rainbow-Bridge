@@ -8,12 +8,14 @@ import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.accessors.ShoulderAccessor;
 import net.cozystudios.rainbowbridge.accessors.TameableEntityDecorator;
+import net.cozystudios.rainbowbridge.homeblock.HomeBlock.HomeBlockHandle;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -34,6 +36,8 @@ public class PetData {
     public NbtCompound collar;
     public final UUID ownerUUID;
     public final String ownerName;
+    public BlockPos homePosition;
+    public RegistryKey<World> homeDimension;
     /** The time, in milliseconds, when the pet was tamed */
     public final long tameTimestamp;
     private NbtCompound entityData;
@@ -46,7 +50,8 @@ public class PetData {
     }
 
     public PetData(TameableEntity tame, Entity player, NbtCompound collarItem, long tameDate) {
-        this.uuid = ((TameableEntityDecorator) tame).rainbowbridge_getUuid(); // Separate UUID from entity for tracking purposes
+        this.uuid = ((TameableEntityDecorator) tame).rainbowbridge_getUuid(); // Separate UUID from entity for tracking
+                                                                              // purposes
         this.entityUuid = tame.getUuid();
         this.position = tame.getBlockPos();
         this.ownerName = player.getEntityName();
@@ -59,7 +64,7 @@ public class PetData {
     }
 
     public PetData(UUID rainbowbridgeUuid, BlockPos pos, UUID ownerUUID, String ownerName, NbtCompound collarItem,
-            String name, long tameDate, NbtCompound entityData) {
+            long tameDate, BlockPos homePosition, RegistryKey<World> homeDimension, NbtCompound entityData) {
         this.uuid = rainbowbridgeUuid;
         this.entityUuid = uuid;
         this.position = pos;
@@ -67,6 +72,8 @@ public class PetData {
         this.ownerUUID = ownerUUID;
         this.collar = collarItem;
         this.tameTimestamp = tameDate;
+        this.homeDimension = homeDimension;
+        this.homePosition = homePosition;
         this.entityData = entityData;
     }
 
@@ -84,27 +91,46 @@ public class PetData {
 
         tag.putLong("tameDate", tameTimestamp);
 
+        tag.putLong("homePos", homePosition != null ? homePosition.asLong() : 0L);
+        tag.putString("homeDim", homeDimension != null ? homeDimension.getValue().toString() : "");
+
         tag.put("EntityData", entityData);
         return tag;
     }
 
     public static PetData fromNbt(NbtCompound tag) {
         UUID rainbowbridge_uuid = tag.getUuid("RainbowBridgeEntityUUID");
-        BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
+
         UUID ownerUUID = tag.getUuid("ownerUUID");
         String ownerName = tag.getString("ownerName");
         NbtCompound collarItem = tag.getCompound("collarItem");
-        String name = tag.getString("name");
+
+        BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
+
         long tameDate = tag.getLong("tameDate");
+
+        BlockPos homePos = tag.contains("homePos") ? BlockPos.fromLong(tag.getLong("homePos")) : null;
+        RegistryKey<World> homeDim = tag.contains("homeDim") && !tag.getString("homeDim").isEmpty()
+                ? RegistryKey.of(RegistryKeys.WORLD, new Identifier(tag.getString("homeDim")))
+                : null;
+
         NbtCompound entityData = tag.contains("EntityData") ? tag.getCompound("EntityData") : null;
 
-        return new PetData(rainbowbridge_uuid, pos, ownerUUID, ownerName, collarItem, name, tameDate, entityData);
+        return new PetData(rainbowbridge_uuid, pos, ownerUUID, ownerName, collarItem, tameDate, homePos, homeDim,
+                entityData);
     }
 
     public void updateEntityData(java.util.function.Consumer<NbtCompound> editor) {
         if (entityData == null)
             return;
         editor.accept(entityData);
+    }
+
+    @Nullable
+    public HomeBlockHandle getHomeBlock() {
+        if (homePosition == null || homeDimension == null)
+            return null;
+        return new HomeBlockHandle(homePosition, homeDimension);
     }
 
     /**
