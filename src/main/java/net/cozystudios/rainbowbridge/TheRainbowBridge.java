@@ -117,12 +117,13 @@ public class TheRainbowBridge implements ModInitializer {
                                 RegistryKey<World> targetWorldKey = RegistryKey.of(RegistryKeys.WORLD, dim);
 
                                 if (petData != null) {
-                                    var pdh = petData.getEntity(server).join();
+                                    petData.getEntity(server).thenAccept(pdh -> {
+                                        // Discard entity if it exists
+                                        if (pdh != null && pdh.entity() != null) {
+                                            server.execute(() -> pdh.entity().discard());
+                                        }
+                                    });
 
-                                    // Discard entity if it exists
-                                    if (pdh != null && pdh.entity() != null) {
-                                        pdh.entity().discard();
-                                    }
                                     entity = petData.recreateEntity(server, targetWorldKey, x, y, z);
 
                                     if (entity == null) {

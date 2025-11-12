@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.accessors.ShoulderAccessor;
+import net.cozystudios.rainbowbridge.accessors.TameableEntityDecorator;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.TameableEntity;
@@ -45,7 +46,7 @@ public class PetData {
     }
 
     public PetData(TameableEntity tame, Entity player, NbtCompound collarItem, long tameDate) {
-        this.uuid = UUID.randomUUID(); // Separate UUID from entity for tracking purposes
+        this.uuid = ((TameableEntityDecorator) tame).rainbowbridge_getUuid(); // Separate UUID from entity for tracking purposes
         this.entityUuid = tame.getUuid();
         this.position = tame.getBlockPos();
         this.ownerName = player.getEntityName();
@@ -57,9 +58,9 @@ public class PetData {
         this.tameTimestamp = tameDate;
     }
 
-    public PetData(UUID uuid, BlockPos pos, UUID ownerUUID, String ownerName, NbtCompound collarItem,
+    public PetData(UUID rainbowbridgeUuid, BlockPos pos, UUID ownerUUID, String ownerName, NbtCompound collarItem,
             String name, long tameDate, NbtCompound entityData) {
-        this.uuid = UUID.randomUUID();
+        this.uuid = rainbowbridgeUuid;
         this.entityUuid = uuid;
         this.position = pos;
         this.ownerName = ownerName;
@@ -71,7 +72,7 @@ public class PetData {
 
     public NbtCompound toNbt() {
         NbtCompound tag = new NbtCompound();
-        tag.putUuid("UUID", uuid);
+        tag.putUuid("RainbowBridgeEntityUUID", uuid);
 
         tag.putUuid("ownerUUID", ownerUUID);
         tag.putString("ownerName", ownerName);
@@ -88,7 +89,7 @@ public class PetData {
     }
 
     public static PetData fromNbt(NbtCompound tag) {
-        UUID uuid = tag.getUuid("UUID");
+        UUID rainbowbridge_uuid = tag.getUuid("RainbowBridgeEntityUUID");
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
         UUID ownerUUID = tag.getUuid("ownerUUID");
         String ownerName = tag.getString("ownerName");
@@ -97,7 +98,7 @@ public class PetData {
         long tameDate = tag.getLong("tameDate");
         NbtCompound entityData = tag.contains("EntityData") ? tag.getCompound("EntityData") : null;
 
-        return new PetData(uuid, pos, ownerUUID, ownerName, collarItem, name, tameDate, entityData);
+        return new PetData(rainbowbridge_uuid, pos, ownerUUID, ownerName, collarItem, name, tameDate, entityData);
     }
 
     public void updateEntityData(java.util.function.Consumer<NbtCompound> editor) {
@@ -120,6 +121,16 @@ public class PetData {
             var entity = world.getEntity(this.entityUuid);
             if (entity != null) {
                 return CompletableFuture.completedFuture(new PetEntityHandle((TameableEntity) entity, null));
+            }
+        }
+
+        for (ServerWorld world : server.getWorlds()) {
+            for (Entity entity : world.iterateEntities()) {
+                if (entity instanceof TameableEntity tame && tame instanceof TameableEntityDecorator data) {
+                    if (data.rainbowbridge_getUuid().equals(uuid)) {
+                        return CompletableFuture.completedFuture(new PetEntityHandle((TameableEntity) tame, null));
+                    }
+                }
             }
         }
 

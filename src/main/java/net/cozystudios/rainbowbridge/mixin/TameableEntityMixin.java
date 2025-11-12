@@ -21,6 +21,18 @@ import net.minecraft.server.MinecraftServer;
 
 @Mixin(TameableEntity.class)
 public abstract class TameableEntityMixin implements TameableEntityDecorator {
+    private UUID rainbowbridge_uuid = UUID.randomUUID();
+
+    @Override
+    public void rainbowbridge_setUuid(UUID uuid) {
+        this.rainbowbridge_uuid = uuid;
+    }
+
+    @Override
+    public UUID rainbowbridge_getUuid() {
+        return this.rainbowbridge_uuid;
+    }
+
     @Shadow
     @Nullable
     public abstract UUID getOwnerUuid();
@@ -57,12 +69,19 @@ public abstract class TameableEntityMixin implements TameableEntityDecorator {
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void writeWanderStateToNbt(NbtCompound nbt, CallbackInfo ci) {
         nbt.putBoolean("RainbowBridgeForceWander", this.rainbowbridge_isForceWander());
+        nbt.putUuid("RainbowBridgeEntityUUID", this.rainbowbridge_getUuid());
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void readWanderStateFromNbt(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("RainbowBridgeForceWander")) {
             this.rainbowbridge_setForceWander(nbt.getBoolean("RainbowBridgeForceWander"));
+        }
+        if (nbt.contains("RainbowBridgeEntityUUID")) {
+            UUID entityUuid = nbt.getUuid("RainbowBridgeEntityUUID");
+            if (entityUuid != null) {
+                this.rainbowbridge_setUuid(entityUuid);
+            }
         }
     }
 
