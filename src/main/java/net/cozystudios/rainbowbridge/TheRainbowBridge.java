@@ -121,7 +121,7 @@ public class TheRainbowBridge implements ModInitializer {
                                     petData.getEntity(server).thenAccept(pdh -> {
                                         // Discard entity if it exists
                                         if (pdh != null && pdh.entity() != null) {
-                                            server.execute(() -> pdh.entity().discard());
+                                            pdh.entity().discard();
                                         }
                                     });
 
