@@ -5,6 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
+import net.cozystudios.rainbowbridge.RaycastHelper;
 import net.cozystudios.rainbowbridge.client.RosterScreen;
 import net.cozystudios.rainbowbridge.homeblock.DefaultSetHomeRequestPacket;
 import net.fabricmc.api.EnvType;
@@ -33,16 +34,21 @@ public class RainbowRosterItem extends Item {
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         // Only open screen on the client side
         if (world.isClient) {
-            // If sneak is held down set home block position
-            if (player.isSneaking()) {
-                BlockPos pos = player.getBlockPos();
-                RegistryKey<World> dim = player.getWorld().getRegistryKey();
-                RainbowBridgeNet.CHANNEL.clientHandle().send(new DefaultSetHomeRequestPacket(pos, dim.getValue()));
-
-                player.sendMessage(Text.translatable("message.rainbowbridge.default_home_set"));
-            } else {
+            if (!player.isSneaking()) {
                 openRosterScreen();
                 player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, 1.0F, 1.0F);
+            }
+        }
+
+        if (!world.isClient) {
+            // If sneak is held down set home block position
+            if (player.isSneaking()) {
+                RegistryKey<World> dim = player.getWorld().getRegistryKey();
+                BlockPos pos = RaycastHelper.getSafeBlock(player);
+
+                RainbowBridgeNet.CHANNEL.clientHandle().send(new DefaultSetHomeRequestPacket(pos, dim.getValue()));
+
+                player.sendMessage(Text.translatable("message.rainbowbridge.default_home_set"), true);
             }
         }
         return TypedActionResult.success(player.getStackInHand(hand));
@@ -52,7 +58,6 @@ public class RainbowRosterItem extends Item {
     private void openRosterScreen() {
         MinecraftClient.getInstance().setScreen(new RosterScreen());
     }
-
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {

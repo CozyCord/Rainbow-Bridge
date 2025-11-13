@@ -32,6 +32,8 @@ public class ClientInit implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        HomeBlockRenderer.register();
+
         openBookKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.rainbowbridge.open_book",
                 InputUtil.Type.KEYSYM,

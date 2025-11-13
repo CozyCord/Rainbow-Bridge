@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
+import net.cozystudios.rainbowbridge.RaycastHelper;
 import net.cozystudios.rainbowbridge.homeblock.HomeSetRequestPacket;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
@@ -45,21 +46,24 @@ public class RainbowCollarItem extends Item {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        if (world.isClient) {
-            ItemStack stack = player.getStackInHand(hand);
+        ItemStack stack = player.getStackInHand(hand);
 
-            // If sneak is held down set home block position for collar
+        if (!world.isClient) {
             if (player.isSneaking()) {
-                BlockPos pos = player.getBlockPos();
                 RegistryKey<World> dim = player.getWorld().getRegistryKey();
                 NbtCompound nbt = stack.getOrCreateNbt();
+                
+                BlockPos pos = RaycastHelper.getSafeBlock(player);
+
                 nbt.putLong("HomePos", pos.asLong());
                 nbt.putString("HomeDim", dim.getValue().toString());
                 stack.setNbt(nbt);
-                player.sendMessage(Text.translatable("message.rainbowbridge.home_set"));
+
+                player.sendMessage(Text.translatable("message.rainbowbridge.home_set"), true);
             }
         }
-        return TypedActionResult.success(player.getStackInHand(hand));
+
+        return TypedActionResult.success(stack);
     }
 
     public ActionResult applyCollar(ItemStack item, PlayerEntity user, TameableEntity tame) {
