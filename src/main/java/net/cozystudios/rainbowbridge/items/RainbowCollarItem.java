@@ -11,7 +11,9 @@ import net.cozystudios.rainbowbridge.RaycastHelper;
 import net.cozystudios.rainbowbridge.homeblock.HomeSetRequestPacket;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,6 +24,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -52,7 +55,7 @@ public class RainbowCollarItem extends Item {
             if (player.isSneaking()) {
                 RegistryKey<World> dim = player.getWorld().getRegistryKey();
                 NbtCompound nbt = stack.getOrCreateNbt();
-                
+
                 BlockPos pos = RaycastHelper.getSafeBlock(player);
 
                 nbt.putLong("HomePos", pos.asLong());
@@ -140,12 +143,22 @@ public class RainbowCollarItem extends Item {
                     .append(Text.literal(pos.getX() + ", " + pos.getY() + ", " + pos.getZ())
                             .formatted(Formatting.AQUA)));
         }
-        if (Screen.hasShiftDown()) {
+        if (!Screen.hasShiftDown()) {
             tooltip.add(
-                    Text.translatable("tooltip.rainbowbridge.collar.info")
+                    Text.translatable("tooltip.rainbowbridge.more_info")
                             .formatted(Formatting.GRAY));
         } else {
-            tooltip.add(Text.translatable("tooltip.rainbowbridge.more_info").formatted(Formatting.GRAY));
+            List<OrderedText> lines = Tooltip.wrapLines(
+                    MinecraftClient.getInstance(),
+                    Text.translatable("tooltip.rainbowbridge.collar.info"));
+            for (OrderedText line : lines) {
+                StringBuilder sb = new StringBuilder();
+                line.accept((index, style, codePoint) -> {
+                    sb.appendCodePoint(codePoint);
+                    return true;
+                });
+                tooltip.add(Text.literal(sb.toString()).formatted(Formatting.GRAY));
+            }
         }
     }
 

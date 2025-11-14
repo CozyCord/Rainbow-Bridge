@@ -90,7 +90,6 @@ public class ClientInit implements ClientModInitializer {
 
         // Register a listener for when the player joins a world/server
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            // Send a packet to request pet data from the server
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
             ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TRACKER, buf);
 

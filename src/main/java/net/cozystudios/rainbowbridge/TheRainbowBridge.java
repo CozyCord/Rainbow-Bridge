@@ -15,6 +15,8 @@ import net.cozystudios.rainbowbridge.items.TheRainbowBridgeItems;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.cozystudios.rainbowbridge.petdatabase.PetWatcher;
+import net.cozystudios.rainbowbridge.registry.ModBlockEntities;
+import net.cozystudios.rainbowbridge.registry.ModBlocks;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
@@ -45,6 +47,8 @@ public class TheRainbowBridge implements ModInitializer {
         // Proceed with mild caution.
 
         TheRainbowBridgeItems.registerItems();
+        ModBlocks.register();
+        ModBlockEntities.register();
         PetWatcher.register();
         TheRainbowBridgeCommands.register();
         RainbowBridgeNet.register();

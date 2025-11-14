@@ -7,6 +7,6 @@
   "message.rainbowbridge.home_set": "Home location set",
   "text.config.rainbowbridge-config.title": "Rainbow Bridge Options",
   "tooltip.rainbowbridge.more_info": "Hold Shift for more info",
-  "tooltip.rainbowbridge.collar.info": "Use to make your tamed pet invulnerable. Pets with collars can be tracked in the Roster. Sneak right click on a block to set home point.",
-  "tooltip.rainbowbridge.roster.info": "Tracks pets with the Collar applied. Sneak right click while holding to set the default home point for all pets"
+  "tooltip.rainbowbridge.collar.info": "Makes your tamed pet invulnerable.\nCollared pets appear in the Roster.\nSneak + right-click a block to set home.\nHold ALT to view home block.",
+  "tooltip.rainbowbridge.roster.info": "Tracks pets with Collars applied.\nSneak + right-click to set the default home point for pets.\nHold ALT to view default home block."
 }
