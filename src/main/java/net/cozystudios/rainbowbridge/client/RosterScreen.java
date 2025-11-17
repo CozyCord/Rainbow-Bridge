@@ -43,7 +43,8 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
     private ClientPetData currentPet;
 
     private @Nullable ButtonComponent homeButton; // Component for the send pet to home button
-    private @Nullable LabelComponent homeLabel; // Component for the coordinates
+    private @Nullable LabelComponent homeLabel; // Component for the pet's home coordinates
+    private @Nullable LabelComponent defaultHomeLabel; // Component for the default home coordinates
     private HomeBlockUpdateEvents.IListener homeUpdateListener;
 
     private @Nullable ButtonComponent summonButton;
@@ -64,14 +65,17 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
                 "home-position-label");
 
         this.homeButton = this.uiAdapter.rootComponent.childById(ButtonComponent.class, "home-button");
+        this.defaultHomeLabel = this.uiAdapter.rootComponent.childById(LabelComponent.class,
+                "default-home-label");
 
         // Listen for default home block update
         homeUpdateListener = (uuid, newHomePos, newDim) -> {
-            if (uuid.equals(MinecraftClient.getInstance().player.getUuid()) && currentPet != null) {
-                if (currentPet.homePosition == null) {
+            if (uuid.equals(MinecraftClient.getInstance().player.getUuid())) {
+                if (currentPet != null && currentPet.homePosition == null) {
                     homeLabel.text(Text.literal(newHomePos.toShortString()));
                     homeButton.visible = true;
                 }
+                defaultHomeLabel.text(Text.literal(newHomePos.toShortString()));
             }
         };
 
@@ -86,6 +90,9 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         }
         homeLabel.text(Text.literal(homePos.toShortString()));
         homeButton.visible = true;
+
+        BlockPos defaultHomePos = ClientHomeBlock.get();
+        defaultHomeLabel.text(Text.literal(defaultHomePos.toShortString()));
 
         // Subscribe for live updates
         ClientPetList.addListener(this::refreshPetList);
@@ -182,9 +189,6 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
                 ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TELEPORT, buf);
             });
         }
-
-        // rootComponent.childById(FlowLayout.class,
-        // "command-buttons").child(this.homeButton);
 
         StackLayout container = rootComponent.childById(StackLayout.class, "entity-box-container");
 
@@ -293,7 +297,7 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
             StackLayout wrapper = Containers.stack(Sizing.fill(95), Sizing.content());
             wrapper.surface(Surface.flat(normalBg));
 
-            LabelComponent label = (LabelComponent) Components.label(Text.literal(pet.name))
+            LabelComponent label = (LabelComponent) Components.label(Text.literal(" " + pet.name))
                     .cursorStyle(CursorStyle.HAND)
                     .horizontalSizing(Sizing.fill(100))
                     .margins(Insets.vertical(2));

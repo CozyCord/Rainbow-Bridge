@@ -12,6 +12,26 @@
                         <!-- Left Page -->
                         <flow-layout direction="vertical">
                             <children>
+                                <!-- Default Home position -->
+                                <flow-layout direction="horizontal">
+                                    <children>
+                                        <texture
+                                            texture="rainbowbridge:textures/gui/default_home_icon.png"
+                                            texture-width="12" texture-height="12"
+                                            region-width="12" region-height="12"
+                                        >
+                                            <tooltip-text>Default home location</tooltip-text>
+                                        </texture>
+                                        <label id="default-home-label">
+                                            <margins>
+                                                <left>2</left>
+                                                <top>2</top>
+                                            </margins>
+                                        </label>
+                                    </children>
+                                </flow-layout>
+
+                                <!-- Pet list -->
                                 <scroll direction="vertical">
                                     <flow-layout id="pet-list" direction="vertical">
                                         <children>
@@ -33,6 +53,9 @@
                                         </vertical>
                                     </sizing>
                                     <allow-overflow>true</allow-overflow>
+                                    <margins>
+                                        <top>16</top>
+                                    </margins>
                                 </scroll>
 
                             </children>
@@ -46,7 +69,6 @@
                                 <right>18</right>
                             </padding>
                             <margins>
-                                <top>24</top>
                             </margins>
                         </flow-layout>
 
@@ -135,18 +157,6 @@
                                                     </renderer>
                                                 </button>
 
-                                                                                                <!-- <component id="home-button" class="net.cozystudios.rainbowbridge.client.TooltipButton">
-                                                    <sizing>
-                                                        <horizontal method="fixed">42</horizontal>
-                                                        <vertical method="fixed">21</vertical>
-                                                    </sizing>
-                                                    <renderer>
-                                                        <texture u="42" v="0"
-                                                            texture="rainbowbridge:textures/gui/command_buttons.png"
-                                                            texture-width="84" texture-height="63" />
-                                                    </renderer>
-                                                </component> -->
-
                                             </children>
 
                                             <margins>
@@ -159,20 +169,53 @@
                                 </flow-layout>
 
                                 <!-- Current position -->
-                                <label id="pet-position-label">
+                                <flow-layout direction="horizontal">
+                                    <children>
+                                        <texture
+                                            texture="rainbowbridge:textures/gui/pos_icon.png"
+                                            texture-width="8" texture-height="10"
+                                            region-width="8" region-height="10"
+                                        >
+                                            <tooltip-text>Current position</tooltip-text>
+                                        </texture>
+                                        <label id="pet-position-label">
+                                            <margins>
+                                                <left>2</left>
+                                                <top>2</top>
+                                            </margins>
+                                        </label>
+                                    </children>
                                     <margins>
-                                        <top>5</top>
+                                        <top>7</top>
                                         <left>5</left>
                                     </margins>
-                                </label>
+                                    <padding>
+                                        <left>1</left>
+                                    </padding>
+                                </flow-layout>
 
                                 <!-- Home position -->
-                                <label id="home-position-label">
+                                <flow-layout direction="horizontal">
+                                    <children>
+                                        <texture
+                                            texture="rainbowbridge:textures/gui/home_icon.png"
+                                            texture-width="10" texture-height="10"
+                                            region-width="10" region-height="10"
+                                        >
+                                            <tooltip-text>Home location</tooltip-text>
+                                        </texture>
+                                        <label id="home-position-label">
+                                            <margins>
+                                                <left>2</left>
+                                                <top>2</top>
+                                            </margins>
+                                        </label>
+                                    </children>
                                     <margins>
-                                        <top>3</top>
+                                        <top>2</top>
                                         <left>5</left>
                                     </margins>
-                                </label>
+                                </flow-layout>
 
                                 <!-- No pets found text -->
                                 <label id="no-pets-message">
@@ -192,6 +235,9 @@
                             <padding>
                                 <left>10</left>
                             </padding>
+                            <margins>
+                                <top>4</top>
+                            </margins>
                             <allow-overflow>false</allow-overflow>
                         </flow-layout>
                     </children>
@@ -202,7 +248,7 @@
                     <positioning type="relative">50,50</positioning>
                     <padding>
                         <all>16</all>
-                        <top>8</top>
+                        <top>4</top>
                     </padding>
                 </flow-layout>
             </children>
