@@ -1,5 +1,6 @@
 package net.cozystudios.rainbowbridge.petdatabase;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -13,6 +14,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -114,10 +117,19 @@ public class PetData {
                 ? RegistryKey.of(RegistryKeys.WORLD, new Identifier(tag.getString("homeDim")))
                 : null;
 
+        List<UUID> ocarinas = new ArrayList<>();
+
+        NbtList ocarinaList = tag.getList("boundOcarinas", NbtElement.COMPOUND_TYPE);
+        for (NbtElement e : ocarinaList) {
+            NbtCompound ocarinaNbt = (NbtCompound) e;
+            if (ocarinaNbt.containsUuid("uuid")) {
+                ocarinas.add(ocarinaNbt.getUuid("uuid"));
+            }
+        }
+
         NbtCompound entityData = tag.contains("EntityData") ? tag.getCompound("EntityData") : null;
 
-        return new PetData(rainbowbridge_uuid, pos, ownerUUID, ownerName, collarItem, tameDate, homePos, homeDim,
-                entityData);
+        return new PetData(rainbowbridge_uuid, pos, ownerUUID, ownerName, collarItem, tameDate, homePos, homeDim, entityData);
     }
 
     public void updateEntityData(java.util.function.Consumer<NbtCompound> editor) {
@@ -131,6 +143,16 @@ public class PetData {
         if (homePosition == null || homeDimension == null)
             return null;
         return new HomeBlockHandle(homePosition, homeDimension);
+    }
+
+    public String getName() {
+        if (entityData.contains("CustomName")) {
+            return Text.Serializer.fromJson(entityData.getString("CustomName")).getString();
+        } else if (entityData.contains("EntityType")) {
+            return entityData.getString("EntityType");
+        } else {
+            return "Unknown Pet";
+        }
     }
 
     /**
@@ -190,13 +212,20 @@ public class PetData {
      * @return
      */
     @Nullable
-    public TameableEntity recreateEntity(MinecraftServer server, RegistryKey<World> worldKey, double x, double y,
-            double z) {
+    public TameableEntity recreateEntity(MinecraftServer server, RegistryKey<World> worldKey, int x, int y,
+            int z) {
         if (server == null || entityData == null)
             return null;
 
         String typeId = entityData.getString("id");
         EntityType<?> type = Registries.ENTITY_TYPE.get(new Identifier(typeId));
+
+        // Discard entity if it exists
+        getEntity(server).thenAccept(pdh -> {
+            if (pdh != null && pdh.entity() != null) {
+                pdh.entity().discard();
+            }
+        });
 
         Entity entity = type.create(server.getWorld(worldKey));
         if (!(entity instanceof TameableEntity tame))
@@ -265,6 +294,10 @@ public class PetData {
         }
 
         return !shoulderHasName && !savedHasName;
+    }
+
+    public void onRemoved(MinecraftServer server) {
+        OcarinaRegistry.get(server).unregisterAllForPet(this.uuid);
     }
 
 }

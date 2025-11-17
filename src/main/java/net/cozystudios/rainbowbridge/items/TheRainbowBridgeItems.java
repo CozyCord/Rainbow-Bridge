@@ -20,6 +20,8 @@ public class TheRainbowBridgeItems {
             new RainbowCollarItem(new FabricItemSettings().maxCount(1)));
     public static final Item ROSTER = registerItem("pet_roster",
             new RainbowRosterItem(new FabricItemSettings().maxCount(1)));
+    public static final Item OCARINA = registerItem("ocarina",
+            new RainbowOcarinaItem(new FabricItemSettings().maxCount(1)));
 
     public static final ItemGroup RAINBOW_ITEMS = Registry.register(Registries.ITEM_GROUP,
             new Identifier(TheRainbowBridge.MOD_ID, "rainbowbridge"), FabricItemGroup.builder()
@@ -27,19 +29,20 @@ public class TheRainbowBridgeItems {
                     .icon(() -> new ItemStack(COLLAR)).entries(((displayContext, entries) -> {
                         entries.add(COLLAR);
                         entries.add(ROSTER);
+                        entries.add(OCARINA);
                     })).build());
 
     private static void addItemsToTab(FabricItemGroupEntries entries) {
         entries.add(COLLAR);
         entries.add(ROSTER);
+        entries.add(OCARINA);
     }
 
     private static Item registerItem(String name, Item item) {
         return Registry.register(Registries.ITEM, new Identifier(TheRainbowBridge.MOD_ID, name), item);
     }
 
-    public static void registerItems() {
-        // replace this with a real item group
+    public static void register() {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(TheRainbowBridgeItems::addItemsToTab);
     }
 }

@@ -28,12 +28,8 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
@@ -123,18 +119,19 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
             MinecraftClient mc = MinecraftClient.getInstance();
             if (mc.player == null)
                 return;
-            double x = mc.player.getX();
-            double y = mc.player.getY();
-            double z = mc.player.getZ();
+            BlockPos pos = mc.player.getBlockPos();
+            int x = pos.getX();
+            int y = pos.getY();
+            int z = pos.getZ();
             boolean shouldSit = false;
             Identifier dim = mc.player.getWorld().getRegistryKey().getValue();
 
             // Send teleport packet
             PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
             buf.writeUuid(currentPet.uuid);
-            buf.writeDouble(x);
-            buf.writeDouble(y);
-            buf.writeDouble(z);
+            buf.writeInt(x);
+            buf.writeInt(y);
+            buf.writeInt(z);
             buf.writeIdentifier(dim);
             buf.writeBoolean(shouldSit);
 
@@ -168,17 +165,17 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
 
                 assert currentPet != null;
 
-                double x = homePos.getX();
-                double y = homePos.getY();
-                double z = homePos.getZ();
+                int x = homePos.getX();
+                int y = homePos.getY();
+                int z = homePos.getZ();
                 boolean shouldWander = true;
 
                 // Send teleport packet
                 PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
                 buf.writeUuid(currentPet.uuid);
-                buf.writeDouble(x);
-                buf.writeDouble(y);
-                buf.writeDouble(z);
+                buf.writeInt(x);
+                buf.writeInt(y);
+                buf.writeInt(z);
                 buf.writeIdentifier(dimId);
                 buf.writeBoolean(shouldWander);
 

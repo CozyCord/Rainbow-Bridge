@@ -1,0 +1,14 @@
+{
+  "ocarina": {
+    "category": "neutral",
+    "sounds": [
+      "rainbowbridge:ocarina"
+    ]
+  },
+  "ocarinatwo": {
+    "category": "neutral",
+    "sounds": [
+      "rainbowbridge:ocarinatwo"
+    ]
+  }
+}

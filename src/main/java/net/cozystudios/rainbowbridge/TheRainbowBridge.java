@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import io.netty.buffer.Unpooled;
 import net.cozystudios.rainbowbridge.accessors.TameableEntityDecorator;
 import net.cozystudios.rainbowbridge.items.RainbowCollarItem;
+import net.cozystudios.rainbowbridge.items.RainbowOcarinaItem;
 import net.cozystudios.rainbowbridge.items.TheRainbowBridgeItems;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
@@ -46,12 +47,17 @@ public class TheRainbowBridge implements ModInitializer {
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
 
-        TheRainbowBridgeItems.registerItems();
+        // Register sounds/items
+        TheRainbowBridgeItems.register();
+        RainbowBridgeSounds.register();
         ModBlocks.register();
         ModBlockEntities.register();
+
         PetWatcher.register();
         TheRainbowBridgeCommands.register();
+
         RainbowBridgeNet.register();
+        TaskScheduler.register();
 
         // cause dogs are annoying and return from a interaction early, we have to
         // overwrite nbt methods
@@ -86,6 +92,10 @@ public class TheRainbowBridge implements ModInitializer {
                     return ActionResult.CONSUME;
                 }
 
+                if (stack.getItem() instanceof RainbowOcarinaItem ocarina && pd != null) {
+                    return ocarina.useOcarinaFromPet(world, playerEntity, stack, pd, tame);
+                }
+
             }
             return ActionResult.PASS;
         }));
@@ -106,9 +116,9 @@ public class TheRainbowBridge implements ModInitializer {
                 (server, player, handler, buf, responseSender) -> {
                     try {
                         UUID petUuid = buf.readUuid();
-                        double x = buf.readDouble();
-                        double y = buf.readDouble();
-                        double z = buf.readDouble();
+                        int x = buf.readInt();
+                        int y = buf.readInt();
+                        int z = buf.readInt();
                         Identifier dim = buf.readIdentifier();
                         Boolean shouldWander = buf.readBoolean();
 
@@ -122,13 +132,6 @@ public class TheRainbowBridge implements ModInitializer {
                                 RegistryKey<World> targetWorldKey = RegistryKey.of(RegistryKeys.WORLD, dim);
 
                                 if (petData != null) {
-                                    petData.getEntity(server).thenAccept(pdh -> {
-                                        // Discard entity if it exists
-                                        if (pdh != null && pdh.entity() != null) {
-                                            pdh.entity().discard();
-                                        }
-                                    });
-
                                     entity = petData.recreateEntity(server, targetWorldKey, x, y, z);
 
                                     if (entity == null) {
@@ -140,6 +143,7 @@ public class TheRainbowBridge implements ModInitializer {
                                         TameableWanderHelper.makeTameableWander(entity);
                                     } else {
                                         entity.setSitting(false);
+                                        TameableWanderHelper.stopWandering(entity);
                                     }
 
                                 } else {
