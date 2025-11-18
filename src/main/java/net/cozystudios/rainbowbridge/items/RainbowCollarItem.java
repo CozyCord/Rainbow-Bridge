@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
 import net.cozystudios.rainbowbridge.RaycastHelper;
-import net.cozystudios.rainbowbridge.homeblock.HomeSetRequestPacket;
+import net.cozystudios.rainbowbridge.packets.HomeSetRequestPacket;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.minecraft.client.MinecraftClient;

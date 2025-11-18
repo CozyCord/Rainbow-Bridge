@@ -297,7 +297,7 @@ public class PetData {
     }
 
     public void onRemoved(MinecraftServer server) {
-        OcarinaRegistry.get(server).unregisterAllForPet(this.uuid);
+        OcarinaRegistry.get(server).unregisterAllForPet(this.uuid, server);
     }
 
 }

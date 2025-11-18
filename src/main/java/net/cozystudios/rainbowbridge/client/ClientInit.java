@@ -10,7 +10,8 @@ import io.netty.buffer.Unpooled;
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
 import net.cozystudios.rainbowbridge.RainbowBridgePackets;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlockUpdateEvents;
-import net.cozystudios.rainbowbridge.homeblock.HomeUpdatePacket;
+import net.cozystudios.rainbowbridge.packets.HomeUpdatePacket;
+import net.cozystudios.rainbowbridge.packets.OcarinaUpdatePacket;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -88,17 +89,35 @@ public class ClientInit implements ClientModInitializer {
             });
         }));
 
+        // Listen to ocarina bind update
+        RainbowBridgeNet.CHANNEL.registerClientbound(
+                OcarinaUpdatePacket.class,
+                (packet, context) -> {
+                    MinecraftClient.getInstance().execute(() -> {
+                        UUID ocarinaId = packet.ocarinaUuid();
+                        UUID petId = packet.petUuid(); // may be null if unbound
+
+                        ClientOcarinaRegistry.set(ocarinaId, petId);
+
+                    });
+                });
+
         // Register a listener for when the player joins a world/server
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-            ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TRACKER, buf);
+            PacketByteBuf ptBuf = new PacketByteBuf(Unpooled.buffer());
+            ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_PET_TRACKER, ptBuf);
 
             ClientHomeBlock.initialize();
+            ClientOcarinaRegistry.initialize();
+
+            PacketByteBuf ocRegBuf = new PacketByteBuf(Unpooled.buffer());
+            ClientPlayNetworking.send(RainbowBridgePackets.REQUEST_OCARINA_REGISTRY, ocRegBuf);
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             ClientHomeBlock.reset();
             ClientPetList.reset();
+            ClientOcarinaRegistry.clear();
         });
     }
 

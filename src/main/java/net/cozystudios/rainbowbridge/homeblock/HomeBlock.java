@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
+import net.cozystudios.rainbowbridge.packets.HomeUpdatePacket;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;

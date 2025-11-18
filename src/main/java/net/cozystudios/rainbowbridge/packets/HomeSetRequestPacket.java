@@ -1,4 +1,4 @@
-package net.cozystudios.rainbowbridge.homeblock;
+package net.cozystudios.rainbowbridge.packets;
 
 import java.util.UUID;
 

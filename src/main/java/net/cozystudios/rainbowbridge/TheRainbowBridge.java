@@ -10,9 +10,11 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.buffer.Unpooled;
 import net.cozystudios.rainbowbridge.accessors.TameableEntityDecorator;
+import net.cozystudios.rainbowbridge.client.ClientOcarinaRegistry;
 import net.cozystudios.rainbowbridge.items.RainbowCollarItem;
 import net.cozystudios.rainbowbridge.items.RainbowOcarinaItem;
 import net.cozystudios.rainbowbridge.items.TheRainbowBridgeItems;
+import net.cozystudios.rainbowbridge.petdatabase.OcarinaRegistry;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
 import net.cozystudios.rainbowbridge.petdatabase.PetWatcher;
@@ -161,6 +163,16 @@ public class TheRainbowBridge implements ModInitializer {
                     }
                 });
 
+                ServerPlayNetworking.registerGlobalReceiver(RainbowBridgePackets.REQUEST_OCARINA_REGISTRY, 
+                (server, player, handler, buf, responseSender) -> {
+                    server.execute(() -> {
+                        var ocarinaList = OcarinaRegistry.get(server).serializeList();
+
+                        // send back to the client
+                        ServerPlayNetworking.send(player, RainbowBridgePackets.REQUEST_OCARINA_REGISTRY, ocarinaList);
+                    });
+                });
+                
         // Remove entities that have been duplicated and marked as such
         ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
             if (entity instanceof TameableEntity) {

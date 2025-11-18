@@ -2,12 +2,16 @@ package net.cozystudios.rainbowbridge.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.cozystudios.rainbowbridge.petdatabase.PetListUpdateEvents;
 
 public class ClientPetList {
 
-    private static final List<ClientPetData> pets = new ArrayList<>();
+    // Maps pet UUID -> ClientPetData
+    private static final Map<UUID, ClientPetData> pets = new ConcurrentHashMap<>();
     private static final List<Runnable> listeners = new ArrayList<>();
 
     static {
@@ -24,12 +28,18 @@ public class ClientPetList {
 
     public static synchronized void setPets(List<ClientPetData> newPets) {
         pets.clear();
-        pets.addAll(newPets);
+        for (ClientPetData pet : newPets) {
+            pets.put(pet.uuid, pet);
+        }
         notifyListeners();
     }
 
     public static synchronized List<ClientPetData> getAllPets() {
-        return List.copyOf(pets);
+        return List.copyOf(pets.values());
+    }
+
+    public static ClientPetData getPet(UUID petUuid) {
+        return pets.get(petUuid);
     }
 
     // --- subscription methods ---

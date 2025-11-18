@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
-import net.cozystudios.rainbowbridge.homeblock.RespawnUpdatePacket;
+import net.cozystudios.rainbowbridge.packets.RespawnUpdatePacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;

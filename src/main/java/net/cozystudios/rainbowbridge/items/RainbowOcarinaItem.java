@@ -9,11 +9,16 @@ import net.cozystudios.rainbowbridge.RainbowBridgeSounds;
 import net.cozystudios.rainbowbridge.RaycastHelper;
 import net.cozystudios.rainbowbridge.TameableWanderHelper;
 import net.cozystudios.rainbowbridge.TaskScheduler;
+import net.cozystudios.rainbowbridge.client.ClientOcarinaRegistry;
+import net.cozystudios.rainbowbridge.client.ClientPetData;
+import net.cozystudios.rainbowbridge.client.ClientPetList;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlock;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlock.HomeBlockHandle;
 import net.cozystudios.rainbowbridge.petdatabase.OcarinaRegistry;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -23,7 +28,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
@@ -40,26 +44,14 @@ public class RainbowOcarinaItem extends Item {
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public boolean hasGlint(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
-        if (nbt == null || !nbt.contains("ocarinaUuid")) {
+        if (stack.getNbt() == null || !stack.getNbt().contains("ocarinaUuid"))
             return false;
-        }
 
-        UUID ocarinaUuid = UUID.fromString(nbt.getString("ocarinaUuid"));
-        if (ocarinaUuid == null) {
-            return false;
-        }
+        UUID ocarinaUuid = UUID.fromString(stack.getNbt().getString("ocarinaUuid"));
 
-        MinecraftServer server = MinecraftClient.getInstance().getServer();
-        if (server == null) {
-            return false;
-        }
-
-        OcarinaRegistry registry = OcarinaRegistry.get(server);
-        UUID petUuid = registry.getPetForOcarina(ocarinaUuid);
-
-        return petUuid != null;
+        return ClientOcarinaRegistry.hasPet(ocarinaUuid);
     }
 
     @Override
@@ -141,7 +133,7 @@ public class RainbowOcarinaItem extends Item {
                 nbt.putString("ocarinaUuid", ocarinaId.toString());
             }
 
-            registry.register(ocarinaId, petData.uuid);
+            registry.register(ocarinaId, petData.uuid, world.getServer());
 
             player.sendMessage(Text.translatable("message.rainbowbridge.ocarina_bound"), true);
             return ActionResult.SUCCESS;
@@ -181,20 +173,20 @@ public class RainbowOcarinaItem extends Item {
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         NbtCompound nbt = stack.getNbt();
-        OcarinaRegistry registry = OcarinaRegistry.get(MinecraftClient.getInstance().getServer());
-        UUID petUuid = registry.getPetForOcarina(
-                nbt != null && nbt.contains("ocarinaUuid")
-                        ? UUID.fromString(nbt.getString("ocarinaUuid"))
-                        : null);
-        if (petUuid != null) {
-            PetTracker tracker = PetTracker.get(MinecraftClient.getInstance().getServer());
-            PetData pd = tracker.get(petUuid);
-            if (pd != null) {
-                tooltip.add(Text.literal(pd.getName()).formatted(Formatting.AQUA));
+        if (nbt != null && nbt.contains("ocarinaUuid")) {
+            UUID ocarinaUuid = UUID.fromString(nbt.getString("ocarinaUuid"));
+            UUID petUuid = ClientOcarinaRegistry.getPet(ocarinaUuid);
+            if (petUuid != null) {
+                ClientPetData pd = ClientPetList.getPet(petUuid);
+                if (pd != null) {
+                    tooltip.add(Text.literal(pd.name).formatted(Formatting.AQUA));
+                }
             }
         }
+
         if (Screen.hasShiftDown()) {
             List<OrderedText> lines = Tooltip.wrapLines(
                     MinecraftClient.getInstance(),

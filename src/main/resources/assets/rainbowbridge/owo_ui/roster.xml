@@ -16,6 +16,7 @@
                                 <flow-layout direction="horizontal">
                                     <children>
                                         <texture
+                                            id="default-home-icon"
                                             texture="rainbowbridge:textures/gui/default_home_icon.png"
                                             texture-width="12" texture-height="12"
                                             region-width="12" region-height="12"
@@ -106,6 +107,10 @@
                                         <left>12</left>
                                     </margins>
 
+                                    <sizing>
+                                        <vertical method="fixed">10</vertical>
+                                    </sizing>
+
                                     <max-width>97</max-width>
                                 </label>
 
@@ -172,6 +177,7 @@
                                 <flow-layout direction="horizontal">
                                     <children>
                                         <texture
+                                            id="pet-position-icon"
                                             texture="rainbowbridge:textures/gui/pos_icon.png"
                                             texture-width="8" texture-height="10"
                                             region-width="8" region-height="10"
@@ -198,6 +204,7 @@
                                 <flow-layout direction="horizontal">
                                     <children>
                                         <texture
+                                            id="home-icon"
                                             texture="rainbowbridge:textures/gui/home_icon.png"
                                             texture-width="10" texture-height="10"
                                             region-width="10" region-height="10"

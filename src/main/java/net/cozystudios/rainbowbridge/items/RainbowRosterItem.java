@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
 import net.cozystudios.rainbowbridge.RaycastHelper;
 import net.cozystudios.rainbowbridge.client.RosterScreen;
-import net.cozystudios.rainbowbridge.homeblock.DefaultSetHomeRequestPacket;
+import net.cozystudios.rainbowbridge.packets.DefaultSetHomeRequestPacket;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;

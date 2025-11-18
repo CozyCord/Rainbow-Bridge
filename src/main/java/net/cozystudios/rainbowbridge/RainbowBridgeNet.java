@@ -1,15 +1,16 @@
 package net.cozystudios.rainbowbridge;
 
 import io.wispforest.owo.network.OwoNetChannel;
-import net.cozystudios.rainbowbridge.homeblock.DefaultSetHomeRequestPacket;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlock;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlock.HomeBlockHandle;
+import net.cozystudios.rainbowbridge.packets.DefaultSetHomeRequestPacket;
+import net.cozystudios.rainbowbridge.packets.HomeRequestPacket;
+import net.cozystudios.rainbowbridge.packets.HomeSetRequestPacket;
+import net.cozystudios.rainbowbridge.packets.HomeUpdatePacket;
+import net.cozystudios.rainbowbridge.packets.OcarinaUpdatePacket;
+import net.cozystudios.rainbowbridge.packets.RespawnUpdatePacket;
 import net.cozystudios.rainbowbridge.petdatabase.PetData;
 import net.cozystudios.rainbowbridge.petdatabase.PetTracker;
-import net.cozystudios.rainbowbridge.homeblock.HomeRequestPacket;
-import net.cozystudios.rainbowbridge.homeblock.HomeSetRequestPacket;
-import net.cozystudios.rainbowbridge.homeblock.HomeUpdatePacket;
-import net.cozystudios.rainbowbridge.homeblock.RespawnUpdatePacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -58,5 +59,6 @@ public class RainbowBridgeNet {
         });
 
         RainbowBridgeNet.CHANNEL.registerClientboundDeferred(HomeUpdatePacket.class);
+        RainbowBridgeNet.CHANNEL.registerClientboundDeferred(OcarinaUpdatePacket.class);
     }
 }

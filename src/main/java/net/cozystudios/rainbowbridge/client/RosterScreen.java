@@ -88,8 +88,13 @@ public class RosterScreen extends BaseUIModelScreen<StackLayout> {
         } else {
             homePos = ClientHomeBlock.get();
         }
-        homeLabel.text(Text.literal(homePos.toShortString()));
-        homeButton.visible = true;
+
+        if (currentPet != null) {
+            homeLabel.text(Text.literal(homePos.toShortString()));
+            homeButton.visible = true;
+        } else {
+            homeLabel.text(Text.literal(""));
+        }
 
         BlockPos defaultHomePos = ClientHomeBlock.get();
         defaultHomeLabel.text(Text.literal(defaultHomePos.toShortString()));

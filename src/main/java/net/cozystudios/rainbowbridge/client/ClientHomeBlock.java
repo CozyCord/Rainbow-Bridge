@@ -6,8 +6,8 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import net.cozystudios.rainbowbridge.RainbowBridgeNet;
-import net.cozystudios.rainbowbridge.homeblock.HomeRequestPacket;
 import net.cozystudios.rainbowbridge.homeblock.HomeBlockUpdateEvents;
+import net.cozystudios.rainbowbridge.packets.HomeRequestPacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;

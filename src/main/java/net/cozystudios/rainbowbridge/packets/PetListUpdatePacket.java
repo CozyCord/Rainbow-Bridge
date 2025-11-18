@@ -1,4 +1,4 @@
-package net.cozystudios.rainbowbridge.petdatabase;
+package net.cozystudios.rainbowbridge.packets;
 
 import java.util.List;
 
